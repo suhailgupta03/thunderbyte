@@ -40,25 +40,10 @@ func (tbf *TBFactory) Create(fc *FactoryCreate) *TBApp {
 				ControllerConfig: cc,
 				Providers:        fc.Providers,
 			}
-			module.InitModule()
+			common.InitModule([]*common.Module{&module}, srv, logger, nil)
 		}
 	}
-
-	for _, imp := range fc.Imports {
-		if imp != nil {
-			if imp.ControllerConfig.ModulePath == "" {
-				logger.Fatalf("ModulePath is missing for one of the controller configs in imports")
-			}
-			if imp.E == nil {
-				imp.E = srv
-			}
-			if imp.L == nil {
-				imp.L = logger
-			}
-			logger.Printf("Initializing module %s", imp.ControllerConfig.ModulePath)
-			imp.InitModule()
-		}
-	}
+	common.InitModule(fc.Imports, srv, logger, nil)
 	return &TBApp{
 		Logger: logger,
 	}
