@@ -44,6 +44,7 @@ func (tbf *TBFactory) Create(fc *FactoryCreate) *TBApp {
 		}
 	}
 	common.InitModule(fc.Imports, srv, logger, nil)
+
 	return &TBApp{
 		Logger: logger,
 	}

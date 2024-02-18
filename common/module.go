@@ -4,6 +4,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"log"
 	"path"
+	"reflect"
 )
 
 type Module struct {
@@ -33,10 +34,18 @@ func InitModule(modules []*Module, srv *echo.Echo, logger *log.Logger, basePath 
 			if basePath != nil {
 				module.ControllerConfig.ModulePath = RoutePath(path.Join(*basePath, string(module.ControllerConfig.ModulePath)))
 			}
+			// Create a map of services to be injected
+			// into the controller
+			serviceMap := make(InjectedServicesMap)
+			for _, p := range module.Providers {
+				ssType := reflect.TypeOf(p)
+				serviceMap[ServiceName(ssType.Name())] = p
+			}
 			cd := controllerDetails{
-				l: module.L,
-				e: module.E,
-				c: module.ControllerConfig,
+				l:                   module.L,
+				e:                   module.E,
+				c:                   module.ControllerConfig,
+				injectedServicesMap: &serviceMap,
 			}
 			logger.Printf("Initializing module %s", module.ControllerConfig.ModulePath)
 			cd.registerRoutes()

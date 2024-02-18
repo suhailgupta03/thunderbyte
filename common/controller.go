@@ -32,8 +32,9 @@ type RequestContext struct {
 	Path        string
 	Headers     Headers
 }
-
-type HTTPMethodHandler func(context RequestContext) (interface{}, *HTTPError)
+type ServiceName string
+type InjectedServicesMap map[ServiceName]interface{}
+type HTTPMethodHandler func(context RequestContext, injectedServicesMap *InjectedServicesMap) (interface{}, *HTTPError)
 type HTTPMethods map[HTTPMethod]HTTPMethodHandler
 type Controller map[RoutePath]HTTPMethods
 
@@ -43,9 +44,10 @@ type ControllerConfig struct {
 }
 
 type controllerDetails struct {
-	l *log.Logger
-	e *echo.Echo
-	c *ControllerConfig
+	l                   *log.Logger
+	e                   *echo.Echo
+	c                   *ControllerConfig
+	injectedServicesMap *InjectedServicesMap
 }
 
 // okResp It is a response struct for successful requests
@@ -94,7 +96,8 @@ func (cd *controllerDetails) handleIncomingRequest(c echo.Context, handler HTTPM
 	requestStart := time.Now().UnixNano()
 	fn := reflect.ValueOf(handler)
 	args := reflect.ValueOf(extractRequestContext(c))
-	response := fn.Call([]reflect.Value{args})
+	serviceMap := reflect.ValueOf(cd.injectedServicesMap)
+	response := fn.Call([]reflect.Value{args, serviceMap})
 	data, e := response[0].Interface(), response[1].Interface()
 	if controllerError, ok := e.(*HTTPError); ok && controllerError != nil {
 		statusText := http.StatusText(controllerError.Code)
