@@ -6,10 +6,10 @@ import (
 )
 
 type Module struct {
-	E           *echo.Echo
-	L           *log.Logger
-	Controllers Controller
-	Providers   []interface{}
+	E                *echo.Echo
+	L                *log.Logger
+	ControllerConfig *ControllerConfig
+	Providers        []interface{}
 }
 
 // InitModule It initializes the module by registering routes
@@ -17,7 +17,7 @@ func (m *Module) InitModule() {
 	cd := controllerDetails{
 		l: m.L,
 		e: m.E,
-		c: m.Controllers,
+		c: m.ControllerConfig,
 	}
 	cd.registerRoutes()
 }

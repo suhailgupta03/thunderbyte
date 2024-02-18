@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"reflect"
+	"strings"
 	"time"
 )
 
@@ -36,10 +37,15 @@ type HTTPMethodHandler func(context RequestContext) (interface{}, *HTTPError)
 type HTTPMethods map[HTTPMethod]HTTPMethodHandler
 type Controller map[RoutePath]HTTPMethods
 
+type ControllerConfig struct {
+	ModulePath  RoutePath
+	Controllers Controller
+}
+
 type controllerDetails struct {
 	l *log.Logger
 	e *echo.Echo
-	c Controller
+	c *ControllerConfig
 }
 
 // okResp It is a response struct for successful requests
@@ -116,44 +122,56 @@ func (cd *controllerDetails) initIncomingRequestHandler(handler HTTPMethodHandle
 	}
 }
 func (cd *controllerDetails) registerRoutes() {
-	for path, methods := range cd.c {
+	for path, methods := range cd.c.Controllers {
+		modulePath := string(cd.c.ModulePath)
+		pathToRegister := string(path)
+		if !strings.HasPrefix(pathToRegister, "/") {
+			pathToRegister = "/" + pathToRegister
+		}
+		if strings.TrimSpace(modulePath) != "" {
+			modulePath = strings.TrimSuffix(modulePath, "/")
+			pathToRegister = strings.TrimPrefix(pathToRegister, "/")
+			pathToRegister = modulePath + "/" + pathToRegister
+		} else {
+			cd.l.Printf("Controller with path '%s' has no module path. It is recommended to always have a module path.\n", pathToRegister)
+		}
 		for method, handler := range methods {
 			switch method {
 			case GET:
-				cd.e.GET(string(path), cd.initIncomingRequestHandler(handler))
-				cd.l.Println("GET", string(path))
+				cd.e.GET(pathToRegister, cd.initIncomingRequestHandler(handler))
+				cd.l.Println("GET", pathToRegister)
 				break
 			case POST:
-				cd.e.POST(string(path), cd.initIncomingRequestHandler(handler))
-				cd.l.Println("POST", string(path))
+				cd.e.POST(pathToRegister, cd.initIncomingRequestHandler(handler))
+				cd.l.Println("POST", pathToRegister)
 				break
 			case PUT:
-				cd.e.PUT(string(path), cd.initIncomingRequestHandler(handler))
-				cd.l.Println("PUT", string(path))
+				cd.e.PUT(pathToRegister, cd.initIncomingRequestHandler(handler))
+				cd.l.Println("PUT", pathToRegister)
 				break
 			case DELETE:
-				cd.e.DELETE(string(path), cd.initIncomingRequestHandler(handler))
-				cd.l.Println("DELETE", string(path))
+				cd.e.DELETE(pathToRegister, cd.initIncomingRequestHandler(handler))
+				cd.l.Println("DELETE", pathToRegister)
 				break
 			case PATCH:
-				cd.e.PATCH(string(path), cd.initIncomingRequestHandler(handler))
-				cd.l.Println("PATCH", string(path))
+				cd.e.PATCH(pathToRegister, cd.initIncomingRequestHandler(handler))
+				cd.l.Println("PATCH", pathToRegister)
 				break
 			case OPTIONS:
-				cd.e.OPTIONS(string(path), cd.initIncomingRequestHandler(handler))
-				cd.l.Println("OPTIONS", string(path))
+				cd.e.OPTIONS(pathToRegister, cd.initIncomingRequestHandler(handler))
+				cd.l.Println("OPTIONS", pathToRegister)
 				break
 			case HEAD:
-				cd.e.HEAD(string(path), cd.initIncomingRequestHandler(handler))
-				cd.l.Println("HEAD", string(path))
+				cd.e.HEAD(pathToRegister, cd.initIncomingRequestHandler(handler))
+				cd.l.Println("HEAD", pathToRegister)
 				break
 			case TRACE:
-				cd.e.TRACE(string(path), cd.initIncomingRequestHandler(handler))
-				cd.l.Println("TRACE", string(path))
+				cd.e.TRACE(pathToRegister, cd.initIncomingRequestHandler(handler))
+				cd.l.Println("TRACE", pathToRegister)
 				break
 			case CONNECT:
-				cd.e.CONNECT(string(path), cd.initIncomingRequestHandler(handler))
-				cd.l.Println("CONNECT", string(path))
+				cd.e.CONNECT(pathToRegister, cd.initIncomingRequestHandler(handler))
+				cd.l.Println("CONNECT", pathToRegister)
 				break
 			}
 		}
