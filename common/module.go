@@ -2,6 +2,7 @@ package common
 
 import (
 	"github.com/labstack/echo/v4"
+	"github.com/suhailgupta03/thunderbyte/database"
 	"log"
 	"path"
 	"reflect"
@@ -15,8 +16,17 @@ type Module struct {
 	Imports          []*Module
 }
 
+type InitModuleParams struct {
+	Srv      *echo.Echo
+	DBConfig *database.DBConfig
+	Logger   *log.Logger
+}
+
 // InitModule It initializes the module by registering routes
-func InitModule(modules []*Module, srv *echo.Echo, logger *log.Logger, basePath *string) {
+func InitModule(modules []*Module, moduleParams *InitModuleParams, basePath *string) {
+	logger := moduleParams.Logger
+	srv := moduleParams.Srv
+
 	for _, module := range modules {
 		if module != nil {
 			if module.ControllerConfig.ModulePath == "" {
@@ -46,6 +56,7 @@ func InitModule(modules []*Module, srv *echo.Echo, logger *log.Logger, basePath 
 				e:                   module.E,
 				c:                   module.ControllerConfig,
 				injectedServicesMap: &serviceMap,
+				dbConfig:            moduleParams.DBConfig,
 			}
 			logger.Printf("Initializing module %s", module.ControllerConfig.ModulePath)
 			cd.registerRoutes()
@@ -53,7 +64,7 @@ func InitModule(modules []*Module, srv *echo.Echo, logger *log.Logger, basePath 
 				// Recursively initialize the imports
 				// Does the nesting of routes
 				newBasePath := string(module.ControllerConfig.ModulePath)
-				InitModule(module.Imports, srv, logger, &newBasePath)
+				InitModule(module.Imports, moduleParams, &newBasePath)
 			}
 		}
 	}

@@ -1,7 +1,9 @@
 package core
 
 import (
+	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
+	"github.com/suhailgupta03/thunderbyte/database"
 	"log"
 	"strconv"
 	"strings"
@@ -12,7 +14,9 @@ type TBAppInterface interface {
 }
 
 type TBApp struct {
-	Logger *log.Logger
+	Logger         *log.Logger
+	DB             *sqlx.DB
+	DefaultQueries database.ThunderbyteQueries
 }
 
 // Listen It starts the server and listens on the specified address

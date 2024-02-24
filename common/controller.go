@@ -2,6 +2,7 @@ package common
 
 import (
 	"github.com/labstack/echo/v4"
+	"github.com/suhailgupta03/thunderbyte/database"
 	"log"
 	"net/http"
 	"reflect"
@@ -26,6 +27,11 @@ const (
 
 type QueryParams map[string][]string
 type Headers map[string][]string
+type AppContext struct {
+	RequestContext RequestContext
+	DBConfig       *database.DBConfig
+	Logger         *log.Logger
+}
 type RequestContext struct {
 	Body        interface{}
 	QueryParams QueryParams
@@ -34,7 +40,7 @@ type RequestContext struct {
 }
 type ServiceName string
 type InjectedServicesMap map[ServiceName]interface{}
-type HTTPMethodHandler func(context RequestContext, injectedServicesMap *InjectedServicesMap) (interface{}, *HTTPError)
+type HTTPMethodHandler func(context AppContext, injectedServicesMap *InjectedServicesMap) (interface{}, *HTTPError)
 type HTTPMethods map[HTTPMethod]HTTPMethodHandler
 type Controller map[RoutePath]HTTPMethods
 
@@ -48,6 +54,7 @@ type controllerDetails struct {
 	e                   *echo.Echo
 	c                   *ControllerConfig
 	injectedServicesMap *InjectedServicesMap
+	dbConfig            *database.DBConfig
 }
 
 // okResp It is a response struct for successful requests
@@ -95,7 +102,12 @@ func extractRequestContext(c echo.Context) RequestContext {
 func (cd *controllerDetails) handleIncomingRequest(c echo.Context, handler HTTPMethodHandler) error {
 	requestStart := time.Now().UnixNano()
 	fn := reflect.ValueOf(handler)
-	args := reflect.ValueOf(extractRequestContext(c))
+	appContext := AppContext{
+		RequestContext: extractRequestContext(c),
+		DBConfig:       cd.dbConfig,
+		Logger:         cd.l,
+	}
+	args := reflect.ValueOf(appContext)
 	serviceMap := reflect.ValueOf(cd.injectedServicesMap)
 	response := fn.Call([]reflect.Value{args, serviceMap})
 	data, e := response[0].Interface(), response[1].Interface()
