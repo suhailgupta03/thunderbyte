@@ -48,6 +48,15 @@ type VerifyOTPRequest struct {
 	Store     store.Store
 }
 
+type CheckOTPStatus struct {
+	Namespace string
+	Provider  string
+	ID        string
+	OTPVal    string
+	Lo        *logf.Logger
+	Store     store.Store
+}
+
 type pushTpl struct {
 	To        string
 	Namespace string
@@ -259,5 +268,20 @@ func HandleVerifyOTP(req *VerifyOTPRequest) (*models.OTP, error) {
 	}
 
 	out, err := verifyOTP(req.Namespace, req.ID, req.OTPVal, true, req.Store, req.Lo)
+	return &out, err
+}
+
+// HandleCheckOTPStatus checks the user input against a stored OTP.
+func HandleCheckOTPStatus(req *CheckOTPStatus) (*models.OTP, error) {
+	if len(req.ID) < 6 {
+		req.Lo.Error("ID should be min 6 chars.")
+		return nil, errors.New("ID should be min 6 chars.")
+	}
+
+	// Check the OTP status.
+	out, err := req.Store.Check(req.Namespace, req.ID, false)
+	if out.Closed {
+		req.Store.Delete(req.Namespace, req.ID)
+	}
 	return &out, err
 }
