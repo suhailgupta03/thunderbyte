@@ -5,7 +5,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/suhailgupta03/thunderbyte/database"
 	"github.com/suhailgupta03/thunderbyte/otp/store/redis"
-	"log"
+	"github.com/zerodha/logf"
 	"net/http"
 	"reflect"
 	"strings"
@@ -33,7 +33,7 @@ type AppContext struct {
 	RequestContext RequestContext
 	DBConfig       *database.DBConfig
 	Redis          *redis.Redis
-	Logger         *log.Logger
+	Logger         *logf.Logger
 	K              *koanf.Koanf
 }
 type RequestContext struct {
@@ -54,7 +54,7 @@ type ControllerConfig struct {
 }
 
 type controllerDetails struct {
-	l                   *log.Logger
+	l                   *logf.Logger
 	e                   *echo.Echo
 	c                   *ControllerConfig
 	injectedServicesMap *InjectedServicesMap
@@ -126,16 +126,16 @@ func (cd *controllerDetails) handleIncomingRequest(c echo.Context, handler HTTPM
 			statusText = http.StatusText(http.StatusInternalServerError)
 			statusCode = http.StatusInternalServerError
 		}
-		cd.l.Printf("Request for %s and %s failed with status code %d", c.Path(), c.Request().Method, statusCode)
-		cd.l.Printf("Request took %d ms", (time.Now().UnixNano()-requestStart)/1000000)
+		cd.l.Error("Request failed", "path", c.Path(), "method", c.Request().Method, "code", statusCode)
+		cd.l.Info("Request time", "ms", (time.Now().UnixNano()-requestStart)/1000000)
 		return c.JSON(statusCode, errorResp{
 			Error:      controllerError.Message,
 			Code:       statusCode,
 			StatusText: statusText,
 		})
 	}
-	cd.l.Printf("Request for %s and %s succeeded", c.Path(), c.Request().Method)
-	cd.l.Printf("Request took %d ms", (time.Now().UnixNano()-requestStart)/1000000)
+	cd.l.Info("Request success", "path", c.Path(), "method", c.Request().Method)
+	cd.l.Info("Request time", "ms", (time.Now().UnixNano()-requestStart)/1000000)
 	return c.JSON(200, okResp{Data: data})
 }
 
@@ -156,45 +156,45 @@ func (cd *controllerDetails) registerRoutes() {
 			pathToRegister = strings.TrimPrefix(pathToRegister, "/")
 			pathToRegister = modulePath + "/" + pathToRegister
 		} else {
-			cd.l.Printf("Controller with path '%s' has no module path. It is recommended to always have a module path.\n", pathToRegister)
+			cd.l.Warn("A controller has no module path. It is recommended to always have a module path", "path", pathToRegister)
 		}
 		for method, handler := range methods {
 			switch method {
 			case GET:
 				cd.e.GET(pathToRegister, cd.initIncomingRequestHandler(handler))
-				cd.l.Println("GET", pathToRegister)
+				cd.l.Info("Registered", "GET", pathToRegister)
 				break
 			case POST:
 				cd.e.POST(pathToRegister, cd.initIncomingRequestHandler(handler))
-				cd.l.Println("POST", pathToRegister)
+				cd.l.Info("Registered", "POST", pathToRegister)
 				break
 			case PUT:
 				cd.e.PUT(pathToRegister, cd.initIncomingRequestHandler(handler))
-				cd.l.Println("PUT", pathToRegister)
+				cd.l.Info("Registered", "PUT", pathToRegister)
 				break
 			case DELETE:
 				cd.e.DELETE(pathToRegister, cd.initIncomingRequestHandler(handler))
-				cd.l.Println("DELETE", pathToRegister)
+				cd.l.Info("Registered", "DELETE", pathToRegister)
 				break
 			case PATCH:
 				cd.e.PATCH(pathToRegister, cd.initIncomingRequestHandler(handler))
-				cd.l.Println("PATCH", pathToRegister)
+				cd.l.Info("Registered", "PATCH", pathToRegister)
 				break
 			case OPTIONS:
 				cd.e.OPTIONS(pathToRegister, cd.initIncomingRequestHandler(handler))
-				cd.l.Println("OPTIONS", pathToRegister)
+				cd.l.Info("Registered", "OPTIONS", pathToRegister)
 				break
 			case HEAD:
 				cd.e.HEAD(pathToRegister, cd.initIncomingRequestHandler(handler))
-				cd.l.Println("HEAD", pathToRegister)
+				cd.l.Info("Registered", "HEAD", pathToRegister)
 				break
 			case TRACE:
 				cd.e.TRACE(pathToRegister, cd.initIncomingRequestHandler(handler))
-				cd.l.Println("TRACE", pathToRegister)
+				cd.l.Info("Registered", "TRACE", pathToRegister)
 				break
 			case CONNECT:
 				cd.e.CONNECT(pathToRegister, cd.initIncomingRequestHandler(handler))
-				cd.l.Println("CONNECT", pathToRegister)
+				cd.l.Info("Registered", "CONNECT", pathToRegister)
 				break
 			}
 		}

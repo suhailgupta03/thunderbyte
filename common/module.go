@@ -5,14 +5,14 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/suhailgupta03/thunderbyte/database"
 	"github.com/suhailgupta03/thunderbyte/otp/store/redis"
-	"log"
+	"github.com/zerodha/logf"
 	"path"
 	"reflect"
 )
 
 type Module struct {
 	E                *echo.Echo
-	L                *log.Logger
+	L                *logf.Logger
 	ControllerConfig *ControllerConfig
 	Providers        []interface{}
 	Imports          []*Module
@@ -23,7 +23,7 @@ type InitModuleParams struct {
 	DBConfig *database.DBConfig
 	Redis    *redis.Redis
 	K        *koanf.Koanf
-	Logger   *log.Logger
+	Logger   *logf.Logger
 }
 
 // InitModule It initializes the module by registering routes
@@ -34,7 +34,7 @@ func InitModule(modules []*Module, moduleParams *InitModuleParams, basePath *str
 	for _, module := range modules {
 		if module != nil {
 			if module.ControllerConfig.ModulePath == "" {
-				logger.Fatalf("ModulePath is missing for one of the controller configs in imports")
+				logger.Fatal("ModulePath is missing for one of the controller configs in imports")
 			}
 			if module.E == nil {
 				module.E = srv
@@ -43,7 +43,7 @@ func InitModule(modules []*Module, moduleParams *InitModuleParams, basePath *str
 				module.L = logger
 			}
 			if module.ControllerConfig == nil {
-				logger.Fatalf("ControllerConfig is required")
+				logger.Fatal("ControllerConfig is required")
 			}
 			if basePath != nil {
 				module.ControllerConfig.ModulePath = RoutePath(path.Join(*basePath, string(module.ControllerConfig.ModulePath)))
@@ -64,7 +64,7 @@ func InitModule(modules []*Module, moduleParams *InitModuleParams, basePath *str
 				redis:               moduleParams.Redis,
 				k:                   moduleParams.K,
 			}
-			logger.Printf("Initializing module %s", module.ControllerConfig.ModulePath)
+			logger.Info("Initializing module", "path", module.ControllerConfig.ModulePath)
 			cd.registerRoutes()
 			if len(module.Imports) > 0 {
 				// Recursively initialize the imports
