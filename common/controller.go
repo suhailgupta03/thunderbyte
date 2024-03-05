@@ -1,8 +1,10 @@
 package common
 
 import (
+	"github.com/knadh/koanf/v2"
 	"github.com/labstack/echo/v4"
 	"github.com/suhailgupta03/thunderbyte/database"
+	"github.com/suhailgupta03/thunderbyte/otp/store/redis"
 	"log"
 	"net/http"
 	"reflect"
@@ -30,7 +32,9 @@ type Headers map[string][]string
 type AppContext struct {
 	RequestContext RequestContext
 	DBConfig       *database.DBConfig
+	Redis          *redis.Redis
 	Logger         *log.Logger
+	K              *koanf.Koanf
 }
 type RequestContext struct {
 	Body        interface{}
@@ -55,6 +59,8 @@ type controllerDetails struct {
 	c                   *ControllerConfig
 	injectedServicesMap *InjectedServicesMap
 	dbConfig            *database.DBConfig
+	redis               *redis.Redis
+	k                   *koanf.Koanf
 }
 
 // okResp It is a response struct for successful requests
@@ -105,6 +111,8 @@ func (cd *controllerDetails) handleIncomingRequest(c echo.Context, handler HTTPM
 	appContext := AppContext{
 		RequestContext: extractRequestContext(c),
 		DBConfig:       cd.dbConfig,
+		Redis:          cd.redis,
+		K:              cd.k,
 		Logger:         cd.l,
 	}
 	args := reflect.ValueOf(appContext)

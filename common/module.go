@@ -1,8 +1,10 @@
 package common
 
 import (
+	"github.com/knadh/koanf/v2"
 	"github.com/labstack/echo/v4"
 	"github.com/suhailgupta03/thunderbyte/database"
+	"github.com/suhailgupta03/thunderbyte/otp/store/redis"
 	"log"
 	"path"
 	"reflect"
@@ -19,6 +21,8 @@ type Module struct {
 type InitModuleParams struct {
 	Srv      *echo.Echo
 	DBConfig *database.DBConfig
+	Redis    *redis.Redis
+	K        *koanf.Koanf
 	Logger   *log.Logger
 }
 
@@ -57,6 +61,8 @@ func InitModule(modules []*Module, moduleParams *InitModuleParams, basePath *str
 				c:                   module.ControllerConfig,
 				injectedServicesMap: &serviceMap,
 				dbConfig:            moduleParams.DBConfig,
+				redis:               moduleParams.Redis,
+				k:                   moduleParams.K,
 			}
 			logger.Printf("Initializing module %s", module.ControllerConfig.ModulePath)
 			cd.registerRoutes()
