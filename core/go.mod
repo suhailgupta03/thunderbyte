@@ -6,8 +6,8 @@ require (
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/knadh/koanf/v2 v2.1.0
 	github.com/labstack/echo/v4 v4.11.4
-	github.com/suhailgupta03/thunderbyte/common v0.0.0-20240305092118-60d82a00f060
-	github.com/suhailgupta03/thunderbyte/database v0.0.0-20240305030202-ee0edbef804d
+	github.com/suhailgupta03/thunderbyte/common v0.0.0-20240305093802-04e0bcaa73d6
+	github.com/suhailgupta03/thunderbyte/database v0.0.0-20240305094419-90d4579b2ad8
 	github.com/suhailgupta03/thunderbyte/otp v0.0.1
 )
 
@@ -26,6 +26,7 @@ require (
 	github.com/redis/go-redis/v9 v9.5.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
+	github.com/zerodha/logf v0.5.5 // indirect
 	golang.org/x/crypto v0.21.0 // indirect
 	golang.org/x/net v0.22.0 // indirect
 	golang.org/x/sys v0.18.0 // indirect

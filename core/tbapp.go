@@ -4,7 +4,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
 	"github.com/suhailgupta03/thunderbyte/database"
-	"log"
+	"github.com/zerodha/logf"
 	"strconv"
 	"strings"
 )
@@ -14,7 +14,7 @@ type TBAppInterface interface {
 }
 
 type TBApp struct {
-	Logger         *log.Logger
+	Logger         *logf.Logger
 	DB             *sqlx.DB
 	DefaultQueries database.ThunderbyteQueries
 }
@@ -27,12 +27,12 @@ func (tba *TBApp) Listen(port int) *echo.Echo {
 		address := ":" + strconv.Itoa(port)
 		if err := srv.Start(address); err != nil {
 			if strings.Contains(err.Error(), "Server closed") {
-				tba.Logger.Println("HTTP server shut down")
+				tba.Logger.Info("HTTP server shut down")
 			} else {
-				tba.Logger.Fatalf("Error starting HTTP server: %v", err)
+				tba.Logger.Fatal("Error starting HTTP server", "error", err)
 			}
 		} else {
-			tba.Logger.Println("HTTP server started on", address)
+			tba.Logger.Info("HTTP server started", "port", address)
 		}
 	}()
 	return srv

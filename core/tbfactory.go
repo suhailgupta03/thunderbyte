@@ -6,9 +6,8 @@ import (
 	"github.com/suhailgupta03/thunderbyte/common"
 	"github.com/suhailgupta03/thunderbyte/database"
 	"github.com/suhailgupta03/thunderbyte/otp/store/redis"
-	"io"
-	"log"
-	"os"
+	"github.com/zerodha/logf"
+	"time"
 )
 
 type TBFactory struct {
@@ -29,29 +28,36 @@ type TBFactoryInterface interface {
 
 var (
 	srv    = echo.New()
-	logger = log.New(io.MultiWriter(os.Stdout), "", log.Ldate|log.Ltime|log.Lshortfile)
+	logger = logf.New(logf.Opts{
+		EnableColor:          true,
+		Level:                logf.DebugLevel,
+		CallerSkipFrameCount: 3,
+		EnableCaller:         true,
+		TimestampFormat:      time.RFC3339Nano,
+		DefaultFields:        []any{"scope", "example"},
+	})
 )
 
 // Create It returns a pointer to a new TBApp
 func (tbf *TBFactory) Create(fc *FactoryCreate) *TBApp {
 	if len(fc.ControllerConfig) == 0 {
-		logger.Fatalf("ControllerConfig is required")
+		logger.Fatal("ControllerConfig is required")
 	}
 
 	if fc.DBConfig != nil {
-		database.ForRoot(fc.DBConfig, logger)
+		database.ForRoot(fc.DBConfig, &logger)
 	}
 
 	for _, cc := range fc.ControllerConfig {
 		if cc.Controllers != nil {
 			module := common.Module{
 				E:                srv,
-				L:                logger,
+				L:                &logger,
 				ControllerConfig: cc,
 				Providers:        fc.Providers,
 			}
 			common.InitModule([]*common.Module{&module}, &common.InitModuleParams{
-				Logger:   logger,
+				Logger:   &logger,
 				Srv:      srv,
 				DBConfig: fc.DBConfig,
 				Redis:    fc.Redis,
@@ -60,7 +66,7 @@ func (tbf *TBFactory) Create(fc *FactoryCreate) *TBApp {
 		}
 	}
 	common.InitModule(fc.Imports, &common.InitModuleParams{
-		Logger:   logger,
+		Logger:   &logger,
 		Srv:      srv,
 		DBConfig: fc.DBConfig,
 		Redis:    fc.Redis,
@@ -68,7 +74,7 @@ func (tbf *TBFactory) Create(fc *FactoryCreate) *TBApp {
 	}, nil)
 
 	return &TBApp{
-		Logger:         logger,
+		Logger:         &logger,
 		DB:             fc.DBConfig.GetDB(),
 		DefaultQueries: fc.DBConfig.GetDefaultQueries(),
 	}
