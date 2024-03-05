@@ -4,7 +4,7 @@ go 1.22.0
 
 require (
 	github.com/labstack/echo/v4 v4.11.4
-	github.com/suhailgupta03/thunderbyte/database v0.0.0-00010101000000-000000000000
+	github.com/suhailgupta03/thunderbyte/database v0.0.0-20240303094946-960fc12150be
 )
 
 require (
@@ -22,4 +22,4 @@ require (
 	golang.org/x/text v0.14.0 // indirect
 )
 
-replace github.com/suhailgupta03/thunderbyte/database => ../database
+// replace github.com/suhailgupta03/thunderbyte/database => ../database
