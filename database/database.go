@@ -6,7 +6,7 @@ import (
 	"github.com/knadh/goyesql/v2"
 	goyesqlx "github.com/knadh/goyesql/v2/sqlx"
 	"github.com/lib/pq"
-	"log"
+	"github.com/zerodha/logf"
 	"os"
 	"reflect"
 )
@@ -42,14 +42,14 @@ type DBConfig struct {
 	SSLMode         string
 	Params          string
 	db              *sqlx.DB
-	l               *log.Logger
+	l               *logf.Logger
 	defaultQuerySet ThunderbyteQueries
 }
 
 // ForRoot Sets up a connection to the database, sets up the schema and initializes a repository
 // struct to be used throughout the application. Panics if it fails to achieve any of the condition
-func ForRoot(c *DBConfig, l *log.Logger) {
-	l.Printf("connecting to db: %s:%d/%s", c.Host, c.Port, c.Database)
+func ForRoot(c *DBConfig, l *logf.Logger) {
+	l.Info("connecting to db", "host", c.Host, "port", c.Port, "database", c.Database)
 	db, err := sqlx.Connect(string(c.Type),
 		fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s %s", c.Host, c.Port, c.User, c.Password, c.Database, c.SSLMode, c.Params))
 
@@ -77,9 +77,9 @@ func ForRoot(c *DBConfig, l *log.Logger) {
 
 	if c.SchemaFilePath != nil {
 		if _, err := c.db.Exec(string(readQueries(*c.SchemaFilePath))); err != nil {
-			c.l.Fatal("Failed while creating schema " + err.Error())
+			c.l.Fatal("Failed while creating schema", "error", err)
 		}
-		c.l.Printf("Applied the schema defined in %s\n", *c.SchemaFilePath)
+		c.l.Info("Applied the schema defined", "path", *c.SchemaFilePath)
 	}
 }
 
