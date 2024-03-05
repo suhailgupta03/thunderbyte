@@ -30,11 +30,12 @@ const (
 type QueryParams map[string][]string
 type Headers map[string][]string
 type AppContext struct {
-	RequestContext RequestContext
-	DBConfig       *database.DBConfig
-	Redis          *redis.Redis
-	Logger         *logf.Logger
-	K              *koanf.Koanf
+	RequestContext    RequestContext
+	HTTPServerContext echo.Context
+	DBConfig          *database.DBConfig
+	Redis             *redis.Redis
+	Logger            *logf.Logger
+	K                 *koanf.Koanf
 }
 type RequestContext struct {
 	Body        interface{}
@@ -109,11 +110,12 @@ func (cd *controllerDetails) handleIncomingRequest(c echo.Context, handler HTTPM
 	requestStart := time.Now().UnixNano()
 	fn := reflect.ValueOf(handler)
 	appContext := AppContext{
-		RequestContext: extractRequestContext(c),
-		DBConfig:       cd.dbConfig,
-		Redis:          cd.redis,
-		K:              cd.k,
-		Logger:         cd.l,
+		RequestContext:    extractRequestContext(c),
+		HTTPServerContext: c,
+		DBConfig:          cd.dbConfig,
+		Redis:             cd.redis,
+		K:                 cd.k,
+		Logger:            cd.l,
 	}
 	args := reflect.ValueOf(appContext)
 	serviceMap := reflect.ValueOf(cd.injectedServicesMap)
