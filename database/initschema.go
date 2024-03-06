@@ -47,22 +47,20 @@ SELECT * FROM thunderbyte_settings where key=$1;
 
 -- name: verify-creds
 SELECT 
-	au.id as auth_uid, 
+	au.id as userid, 
 	au.username as username
 	FROM auth_users as au
 	left join auth_passwords as ap
-	where au.username='$1' and ap.password='$2';
+	on au.id = ap.user_id
+	where au.username=$1 and ap.password=$2;
 
 -- name: fetch-auth-profile
-SELECT id, username from public.auth_users where username = '$1'
+SELECT id, username from auth_users where username = $1;
 
 -- name: create-auth-profile
-INSERT INTO public.auth_users (id, username)
-	VALUES (DEFAULT, '$1'::text);
+INSERT INTO auth_users (username) VALUES ($1)
+RETURNING id;
 
 -- name: create-password
-INSERT INTO public.auth_users (password,user_id)
-	VALUES ('$1'::text,$2);
-
-`
+INSERT INTO auth_passwords (password,user_id) VALUES ($1,$2);`
 }

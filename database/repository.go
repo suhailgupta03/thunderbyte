@@ -30,9 +30,8 @@ type AuthProfile struct {
 type Queries interface{}
 
 type ThunderbyteQueries struct {
-	GetAllSettings  *sqlx.Stmt `query:"get-all-settings"`
-	GetSettingByKey *sqlx.Stmt `query:"get-setting-by-key"`
-
+	GetAllSettings    *sqlx.Stmt `query:"get-all-settings"`
+	GetSettingByKey   *sqlx.Stmt `query:"get-setting-by-key"`
 	VerifyCredentials *sqlx.Stmt `query:"verify-creds"`
 	FetchAuthProfile  *sqlx.Stmt `query:"fetch-auth-profile"`
 	CreateAuthProfile *sqlx.Stmt `query:"create-auth-profile"`
