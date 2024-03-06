@@ -21,6 +21,11 @@ type VerifiedUser struct {
 	Username string `db:"username"`
 }
 
+type AuthProfile struct {
+	UserId   int    `db:"id"`
+	Username string `db:"username"`
+}
+
 // Queries contains all prepared SQL queries.
 type Queries interface{}
 
@@ -29,4 +34,7 @@ type ThunderbyteQueries struct {
 	GetSettingByKey *sqlx.Stmt `query:"get-setting-by-key"`
 
 	VerifyCredentials *sqlx.Stmt `query:"verify-creds"`
+	FetchAuthProfile  *sqlx.Stmt `query:"fetch-auth-profile"`
+	CreateAuthProfile *sqlx.Stmt `query:"create-auth-profile"`
+	CreatePassword    *sqlx.Stmt `query:"create-password"`
 }
