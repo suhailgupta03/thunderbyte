@@ -55,6 +55,8 @@ github.com/suhailgupta03/thunderbyte/common v0.0.0-20240305093802-04e0bcaa73d6 h
 github.com/suhailgupta03/thunderbyte/common v0.0.0-20240305093802-04e0bcaa73d6/go.mod h1:J5YYlmM0TNf1K8BY/CvFo7o0FCAQk97baKEQsOCVrlM=
 github.com/suhailgupta03/thunderbyte/common v0.0.0-20240306170956-ca0f7e42bbf0 h1:h1sCB4LCWK/5taekfAyYpALqZP3mYQ8H0v09RTt//T4=
 github.com/suhailgupta03/thunderbyte/common v0.0.0-20240306170956-ca0f7e42bbf0/go.mod h1:J5YYlmM0TNf1K8BY/CvFo7o0FCAQk97baKEQsOCVrlM=
+github.com/suhailgupta03/thunderbyte/common v0.0.0-20240306172304-d47594b8c0c4 h1:sA8DVz0aD97d6nufZqqxDxeVKc5jSQuFlzNE3ohFfnw=
+github.com/suhailgupta03/thunderbyte/common v0.0.0-20240306172304-d47594b8c0c4/go.mod h1:qdB3fmGoMmRDDMgSr9HBqKi8n/skDdAxIcvBq+t1cmU=
 github.com/suhailgupta03/thunderbyte/database v0.0.0-20240305030202-ee0edbef804d h1:nez3pLRkigDD62koiAvtUz9dAxoJWACTUI3j4JbvAn0=
 github.com/suhailgupta03/thunderbyte/database v0.0.0-20240305030202-ee0edbef804d/go.mod h1:ZGdaUe0gRSbRME1x2E+UB0sXLYZTRHjJWlisl+He+tg=
 github.com/suhailgupta03/thunderbyte/database v0.0.0-20240305092718-180e7ef51381 h1:1mk1NEFQ+cq/XbARjn3FblHUNeQ41wVIc66lRZQVUkI=
@@ -63,6 +65,8 @@ github.com/suhailgupta03/thunderbyte/database v0.0.0-20240305094419-90d4579b2ad8
 github.com/suhailgupta03/thunderbyte/database v0.0.0-20240305094419-90d4579b2ad8/go.mod h1:EZyFcKReZrHPTY1JawRzMZKyDWS1QkkCVjrUUTshmrs=
 github.com/suhailgupta03/thunderbyte/database v0.0.0-20240306170956-ca0f7e42bbf0 h1:cADk+4OOtiazxZm6Qz37ZpYjDRlRg242TeK9xNJxzd8=
 github.com/suhailgupta03/thunderbyte/database v0.0.0-20240306170956-ca0f7e42bbf0/go.mod h1:EZyFcKReZrHPTY1JawRzMZKyDWS1QkkCVjrUUTshmrs=
+github.com/suhailgupta03/thunderbyte/database v0.0.0-20240306172304-d47594b8c0c4 h1:LqfckAommLaKmG/TK3fMrHQVFTOKSlZsMKmNYGFd5oA=
+github.com/suhailgupta03/thunderbyte/database v0.0.0-20240306172304-d47594b8c0c4/go.mod h1:EZyFcKReZrHPTY1JawRzMZKyDWS1QkkCVjrUUTshmrs=
 github.com/suhailgupta03/thunderbyte/otp v0.0.1 h1:WsylOvjrwP6IwZ2YLgvq8MLVC/oTUB7XkLgrwWMQ29c=
 github.com/suhailgupta03/thunderbyte/otp v0.0.1/go.mod h1:lpcow/M6SfP3wH6ecoFSU4fU2gE958yHV6+aymGdq50=
 github.com/valyala/bytebufferpool v1.0.0 h1:GqA5TC/0021Y/b9FG4Oi9Mr3q7XYx6KllzawFIhcdPw=

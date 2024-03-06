@@ -65,6 +65,7 @@ func ForRoot(c *DBConfig, l *logf.Logger) {
 	var tbDQ ThunderbyteQueries
 	goyesqlx.ScanToStruct(&tbDQ, defaultQueryMap, c.db)
 	c.defaultQuerySet = tbDQ
+	fmt.Println(tbDQ.CreateAuthProfile, ">>>>")
 	if c.Queries != nil && reflect.TypeOf(c.Queries).Kind() == reflect.Pointer {
 		if c.QueryFilePath != nil {
 			queries := goyesql.MustParseFile(*c.QueryFilePath)
