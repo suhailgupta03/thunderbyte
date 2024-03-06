@@ -55,6 +55,8 @@ github.com/stretchr/testify v1.8.4 h1:CcVxjf3Q8PM0mHUKJCdn+eZZtm5yQwehR5yeSVQQcU
 github.com/stretchr/testify v1.8.4/go.mod h1:sz/lmYIOXD/1dqDmKjjqLyZ2RngseejIcXlSw2iwfAo=
 github.com/suhailgupta03/thunderbyte/database v0.0.0-20240303094946-960fc12150be h1:xtceJK+dQIc1elSPBSTrN8078LkPqiCQbTJeCa0yoLQ=
 github.com/suhailgupta03/thunderbyte/database v0.0.0-20240303094946-960fc12150be/go.mod h1:ZGdaUe0gRSbRME1x2E+UB0sXLYZTRHjJWlisl+He+tg=
+github.com/suhailgupta03/thunderbyte/database v0.0.0-20240306170956-ca0f7e42bbf0 h1:cADk+4OOtiazxZm6Qz37ZpYjDRlRg242TeK9xNJxzd8=
+github.com/suhailgupta03/thunderbyte/database v0.0.0-20240306170956-ca0f7e42bbf0/go.mod h1:EZyFcKReZrHPTY1JawRzMZKyDWS1QkkCVjrUUTshmrs=
 github.com/suhailgupta03/thunderbyte/otp v0.0.1 h1:WsylOvjrwP6IwZ2YLgvq8MLVC/oTUB7XkLgrwWMQ29c=
 github.com/suhailgupta03/thunderbyte/otp v0.0.1/go.mod h1:lpcow/M6SfP3wH6ecoFSU4fU2gE958yHV6+aymGdq50=
 github.com/valyala/bytebufferpool v1.0.0 h1:GqA5TC/0021Y/b9FG4Oi9Mr3q7XYx6KllzawFIhcdPw=

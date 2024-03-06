@@ -6,8 +6,8 @@ require (
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/knadh/koanf/v2 v2.1.0
 	github.com/labstack/echo/v4 v4.11.4
-	github.com/suhailgupta03/thunderbyte/common v0.0.0-20240305093802-04e0bcaa73d6
-	github.com/suhailgupta03/thunderbyte/database v0.0.0-20240305094419-90d4579b2ad8
+	github.com/suhailgupta03/thunderbyte/common v0.0.0-20240306170956-ca0f7e42bbf0
+	github.com/suhailgupta03/thunderbyte/database v0.0.0-20240306170956-ca0f7e42bbf0
 	github.com/suhailgupta03/thunderbyte/otp v0.0.1
 )
 

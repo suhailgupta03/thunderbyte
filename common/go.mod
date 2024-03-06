@@ -4,7 +4,7 @@ go 1.22.0
 
 require (
 	github.com/labstack/echo/v4 v4.11.4
-	github.com/suhailgupta03/thunderbyte/database v0.0.0-20240303094946-960fc12150be
+	github.com/suhailgupta03/thunderbyte/database v0.0.0-20240306170956-ca0f7e42bbf0
 )
 
 require (
