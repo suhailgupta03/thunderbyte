@@ -13,8 +13,8 @@ require (
 )
 
 require (
-	github.com/suhailgupta03/thunderbyte/common v0.0.0-20240306185410-3ebf5146195a
-	github.com/suhailgupta03/thunderbyte/database v0.0.0-20240306185410-3ebf5146195a
+	github.com/suhailgupta03/thunderbyte/common v0.0.0-20240307183523-d82ea5570913
+	github.com/suhailgupta03/thunderbyte/database v0.0.0-20240306185805-01b80d91801f
 )
 
 require (

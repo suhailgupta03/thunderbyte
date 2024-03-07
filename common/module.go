@@ -23,7 +23,6 @@ type InitModuleParams struct {
 	DBConfig *database.DBConfig
 	Redis    *redis.Redis
 	K        *koanf.Koanf
-	Q        interface{}
 	Logger   *logf.Logger
 }
 
@@ -64,7 +63,6 @@ func InitModule(modules []*Module, moduleParams *InitModuleParams, basePath *str
 				dbConfig:            moduleParams.DBConfig,
 				redis:               moduleParams.Redis,
 				k:                   moduleParams.K,
-				q:                   moduleParams.Q,
 			}
 			logger.Info("Initializing module", "path", module.ControllerConfig.ModulePath)
 			cd.registerRoutes()

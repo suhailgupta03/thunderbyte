@@ -51,8 +51,12 @@ github.com/stretchr/testify v1.8.4 h1:CcVxjf3Q8PM0mHUKJCdn+eZZtm5yQwehR5yeSVQQcU
 github.com/stretchr/testify v1.8.4/go.mod h1:sz/lmYIOXD/1dqDmKjjqLyZ2RngseejIcXlSw2iwfAo=
 github.com/suhailgupta03/thunderbyte/common v0.0.0-20240306185410-3ebf5146195a h1:C2YLkFN+o779yrcou6fWgLFgiQKLlAtgNmX0oC49r0c=
 github.com/suhailgupta03/thunderbyte/common v0.0.0-20240306185410-3ebf5146195a/go.mod h1:eVKWQ8DP4b78eTSBNHKRjs8NJBeQyzIMNN3o07STgkk=
+github.com/suhailgupta03/thunderbyte/common v0.0.0-20240307183523-d82ea5570913 h1:iOXijYx/wsKIYx5SI5WLAwiBoKVMTozzD1kijRI0GuU=
+github.com/suhailgupta03/thunderbyte/common v0.0.0-20240307183523-d82ea5570913/go.mod h1:AiCyC9P9pdxB3Np/BuSi8Od/Y4Suix3um5nU6ud8f1w=
 github.com/suhailgupta03/thunderbyte/database v0.0.0-20240306185410-3ebf5146195a h1:5xU/1rE1PTFpqprxvmfLs2iXoaWZ4rPBYxiiBrssQ3c=
 github.com/suhailgupta03/thunderbyte/database v0.0.0-20240306185410-3ebf5146195a/go.mod h1:EZyFcKReZrHPTY1JawRzMZKyDWS1QkkCVjrUUTshmrs=
+github.com/suhailgupta03/thunderbyte/database v0.0.0-20240306185805-01b80d91801f h1:vrq2hc00Tti8WM1XAznANDpLPRAum8UC219Wj517xr4=
+github.com/suhailgupta03/thunderbyte/database v0.0.0-20240306185805-01b80d91801f/go.mod h1:EZyFcKReZrHPTY1JawRzMZKyDWS1QkkCVjrUUTshmrs=
 github.com/suhailgupta03/thunderbyte/otp v0.0.1 h1:WsylOvjrwP6IwZ2YLgvq8MLVC/oTUB7XkLgrwWMQ29c=
 github.com/suhailgupta03/thunderbyte/otp v0.0.1/go.mod h1:lpcow/M6SfP3wH6ecoFSU4fU2gE958yHV6+aymGdq50=
 github.com/valyala/bytebufferpool v1.0.0 h1:GqA5TC/0021Y/b9FG4Oi9Mr3q7XYx6KllzawFIhcdPw=

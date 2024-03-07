@@ -17,7 +17,6 @@ type FactoryCreate struct {
 	DBConfig         *database.DBConfig
 	K                *koanf.Koanf
 	Redis            *redis.Redis
-	Q                interface{}
 	ControllerConfig []*common.ControllerConfig
 	Providers        []interface{}
 	Imports          []*common.Module
@@ -63,7 +62,6 @@ func (tbf *TBFactory) Create(fc *FactoryCreate) *TBApp {
 				DBConfig: fc.DBConfig,
 				Redis:    fc.Redis,
 				K:        fc.K,
-				Q:        fc.Q,
 			}, nil)
 		}
 	}
@@ -73,7 +71,6 @@ func (tbf *TBFactory) Create(fc *FactoryCreate) *TBApp {
 		DBConfig: fc.DBConfig,
 		Redis:    fc.Redis,
 		K:        fc.K,
-		Q:        fc.Q,
 	}, nil)
 
 	return &TBApp{
