@@ -36,6 +36,7 @@ type AppContext struct {
 	Redis             *redis.Redis
 	Logger            *logf.Logger
 	K                 *koanf.Koanf
+	Q                 interface{}
 }
 type RequestContext struct {
 	Body        interface{}
@@ -62,6 +63,7 @@ type controllerDetails struct {
 	dbConfig            *database.DBConfig
 	redis               *redis.Redis
 	k                   *koanf.Koanf
+	q                   interface{}
 }
 
 // okResp It is a response struct for successful requests
@@ -116,6 +118,7 @@ func (cd *controllerDetails) handleIncomingRequest(c echo.Context, handler HTTPM
 		Redis:             cd.redis,
 		K:                 cd.k,
 		Logger:            cd.l,
+		Q:                 cd.q,
 	}
 	args := reflect.ValueOf(appContext)
 	serviceMap := reflect.ValueOf(cd.injectedServicesMap)
