@@ -1,6 +1,7 @@
 package core
 
 import (
+	"github.com/go-playground/validator/v10"
 	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
 	"github.com/suhailgupta03/thunderbyte/database"
@@ -22,6 +23,8 @@ type TBApp struct {
 // Listen It starts the server and listens on the specified address
 func (tba *TBApp) Listen(port int) *echo.Echo {
 	srv.HideBanner = true
+	// Initialize the request validator
+	srv.Validator = &RequestValidator{validator: validator.New()}
 	// Start the server.
 	go func() {
 		address := ":" + strconv.Itoa(port)
