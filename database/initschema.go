@@ -54,8 +54,11 @@ SELECT
 	on au.id = ap.user_id
 	where au.username=$1 and ap.password=$2;
 
--- name: fetch-auth-profile
+-- name: fetch-auth-profile-by-username
 SELECT id, username from auth_users where username = $1;
+
+-- name: fetch-auth-profile-by-id
+SELECT id, username from auth_users where id = $1;
 
 -- name: create-auth-profile
 INSERT INTO auth_users (username) VALUES ($1)
