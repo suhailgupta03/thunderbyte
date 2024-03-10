@@ -65,6 +65,14 @@ func ForRoot(c *DBConfig, l *logf.Logger) {
 	var tbDQ ThunderbyteQueries
 	goyesqlx.ScanToStruct(&tbDQ, defaultQueryMap, c.db)
 	c.defaultQuerySet = tbDQ
+	
+	if c.SchemaFilePath != nil {
+		if _, err := c.db.Exec(string(readQueries(*c.SchemaFilePath))); err != nil {
+			c.l.Fatal("Failed while creating schema", "error", err)
+		}
+		c.l.Info("Applied the schema defined", "path", *c.SchemaFilePath)
+	}
+
 	if c.Queries != nil && reflect.TypeOf(c.Queries).Kind() == reflect.Pointer {
 		if c.QueryFilePath != nil {
 			queries := goyesql.MustParseFile(*c.QueryFilePath)
@@ -73,13 +81,6 @@ func ForRoot(c *DBConfig, l *logf.Logger) {
 				c.l.Fatal("Error scanning queries to struct: ", "error", err)
 			}
 		}
-	}
-
-	if c.SchemaFilePath != nil {
-		if _, err := c.db.Exec(string(readQueries(*c.SchemaFilePath))); err != nil {
-			c.l.Fatal("Failed while creating schema", "error", err)
-		}
-		c.l.Info("Applied the schema defined", "path", *c.SchemaFilePath)
 	}
 }
 
