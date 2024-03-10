@@ -65,13 +65,12 @@ func ForRoot(c *DBConfig, l *logf.Logger) {
 	var tbDQ ThunderbyteQueries
 	goyesqlx.ScanToStruct(&tbDQ, defaultQueryMap, c.db)
 	c.defaultQuerySet = tbDQ
-	fmt.Println(tbDQ.CreateAuthProfile, ">>>>")
 	if c.Queries != nil && reflect.TypeOf(c.Queries).Kind() == reflect.Pointer {
 		if c.QueryFilePath != nil {
 			queries := goyesql.MustParseFile(*c.QueryFilePath)
 			err = goyesqlx.ScanToStruct(c.Queries, queries, c.db)
 			if err != nil {
-				c.l.Fatal("Error scanning queries to struct: ", err)
+				c.l.Fatal("Error scanning queries to struct: ", "error", err)
 			}
 		}
 	}
