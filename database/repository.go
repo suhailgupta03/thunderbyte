@@ -17,12 +17,12 @@ type ThunderByteSetting struct {
 type ThunderByteSettings []ThunderByteSetting
 
 type VerifiedUser struct {
-	UserId   int    `db:"userid"`
+	UserId   int64  `db:"userid"`
 	Username string `db:"username"`
 }
 
 type AuthProfile struct {
-	UserId   int    `db:"id"`
+	UserId   int64  `db:"id"`
 	Username string `db:"username"`
 }
 

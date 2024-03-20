@@ -16,7 +16,7 @@ insert into thunderbyte_settings (key, value) values ('version', '1.0.0');
 
 
 create table if not exists auth_users (
-    id serial not null
+    id bigserial not null
         constraint users_pk
             primary key,
     username text not null
@@ -25,7 +25,7 @@ create table if not exists auth_users (
 );
 
 create table if not exists auth_passwords (
-    id serial not null
+    id bigserial not null
         constraint user_passwords_pk
             primary key,
     user_id integer not null
