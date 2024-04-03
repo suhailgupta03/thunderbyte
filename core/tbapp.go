@@ -18,6 +18,7 @@ type TBApp struct {
 	Logger         *logf.Logger
 	DB             *sqlx.DB
 	DefaultQueries database.ThunderbyteQueries
+	DBConfig       *database.DBConfig
 }
 
 // Listen It starts the server and listens on the specified address

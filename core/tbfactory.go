@@ -65,6 +65,7 @@ func (tbf *TBFactory) Create(fc *FactoryCreate) *TBApp {
 			}, nil)
 		}
 	}
+
 	common.InitModule(fc.Imports, &common.InitModuleParams{
 		Logger:   &logger,
 		Srv:      srv,
@@ -77,5 +78,6 @@ func (tbf *TBFactory) Create(fc *FactoryCreate) *TBApp {
 		Logger:         &logger,
 		DB:             fc.DBConfig.GetDB(),
 		DefaultQueries: fc.DBConfig.GetDefaultQueries(),
+		DBConfig:       fc.DBConfig,
 	}
 }
