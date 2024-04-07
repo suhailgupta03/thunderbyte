@@ -47,11 +47,7 @@ type RequestContext struct {
 type ServiceName string
 type InjectedServicesMap map[ServiceName]interface{}
 type HTTPMethodHandler func(context AppContext, injectedServicesMap *InjectedServicesMap) (interface{}, *HTTPError)
-type HandlerWithMiddlewares struct {
-	Handler    HTTPMethodHandler
-	Middleware []echo.MiddlewareFunc
-}
-type HTTPMethods map[HTTPMethod]HandlerWithMiddlewares
+type HTTPMethods map[HTTPMethod]HTTPMethodHandler
 type Controller map[RoutePath]HTTPMethods
 
 type ControllerConfig struct {
@@ -169,39 +165,39 @@ func (cd *controllerDetails) registerRoutes() {
 		for method, handler := range methods {
 			switch method {
 			case GET:
-				cd.e.GET(pathToRegister, cd.initIncomingRequestHandler(handler.Handler), handler.Middleware...)
+				cd.e.GET(pathToRegister, cd.initIncomingRequestHandler(handler))
 				cd.l.Info("Registered", "GET", pathToRegister)
 				break
 			case POST:
-				cd.e.POST(pathToRegister, cd.initIncomingRequestHandler(handler.Handler), handler.Middleware...)
+				cd.e.POST(pathToRegister, cd.initIncomingRequestHandler(handler))
 				cd.l.Info("Registered", "POST", pathToRegister)
 				break
 			case PUT:
-				cd.e.PUT(pathToRegister, cd.initIncomingRequestHandler(handler.Handler), handler.Middleware...)
+				cd.e.PUT(pathToRegister, cd.initIncomingRequestHandler(handler))
 				cd.l.Info("Registered", "PUT", pathToRegister)
 				break
 			case DELETE:
-				cd.e.DELETE(pathToRegister, cd.initIncomingRequestHandler(handler.Handler), handler.Middleware...)
+				cd.e.DELETE(pathToRegister, cd.initIncomingRequestHandler(handler))
 				cd.l.Info("Registered", "DELETE", pathToRegister)
 				break
 			case PATCH:
-				cd.e.PATCH(pathToRegister, cd.initIncomingRequestHandler(handler.Handler), handler.Middleware...)
+				cd.e.PATCH(pathToRegister, cd.initIncomingRequestHandler(handler))
 				cd.l.Info("Registered", "PATCH", pathToRegister)
 				break
 			case OPTIONS:
-				cd.e.OPTIONS(pathToRegister, cd.initIncomingRequestHandler(handler.Handler), handler.Middleware...)
+				cd.e.OPTIONS(pathToRegister, cd.initIncomingRequestHandler(handler))
 				cd.l.Info("Registered", "OPTIONS", pathToRegister)
 				break
 			case HEAD:
-				cd.e.HEAD(pathToRegister, cd.initIncomingRequestHandler(handler.Handler), handler.Middleware...)
+				cd.e.HEAD(pathToRegister, cd.initIncomingRequestHandler(handler))
 				cd.l.Info("Registered", "HEAD", pathToRegister)
 				break
 			case TRACE:
-				cd.e.TRACE(pathToRegister, cd.initIncomingRequestHandler(handler.Handler), handler.Middleware...)
+				cd.e.TRACE(pathToRegister, cd.initIncomingRequestHandler(handler))
 				cd.l.Info("Registered", "TRACE", pathToRegister)
 				break
 			case CONNECT:
-				cd.e.CONNECT(pathToRegister, cd.initIncomingRequestHandler(handler.Handler), handler.Middleware...)
+				cd.e.CONNECT(pathToRegister, cd.initIncomingRequestHandler(handler))
 				cd.l.Info("Registered", "CONNECT", pathToRegister)
 				break
 			}
