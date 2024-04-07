@@ -51,7 +51,7 @@ func initProviderTpl(subj, tplFile string, lo *logf.Logger) *providerTpl {
 }
 
 // initProviders loads models.Provider plugins from the list of given filenames.
-func initProviders(cfg *smtp.Config, templateName string, lo *logf.Logger) map[string]*provider {
+func initProviders(cfg *smtp.Config, templateName string, subject string, lo *logf.Logger) map[string]*provider {
 	out := make(map[string]*provider)
 	// Initialized the in-built providers.
 	// SMTP.
@@ -64,7 +64,7 @@ func initProviders(cfg *smtp.Config, templateName string, lo *logf.Logger) map[s
 
 		out["smtp"] = &provider{
 			provider: p,
-			tpl:      initProviderTpl("Test Subject", templateName, lo),
+			tpl:      initProviderTpl(subject, templateName, lo),
 		}
 	}
 

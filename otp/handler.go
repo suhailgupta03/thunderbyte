@@ -33,6 +33,7 @@ type SetOTPRequest struct {
 	Extra              []byte
 	SMTPConfig         *smtp.Config
 	HTMLTemplateName   string
+	Subject            string
 	Lo                 *logf.Logger
 	Store              store.Store
 	ChannelDescription string
@@ -170,7 +171,7 @@ func verifyOTP(namespace, id, otp string, deleteOnVerify bool, s store.Store, lo
 // and TTL values.
 func HandleSetOTP(req SetOTPRequest) (*OTPResp, error) {
 	// TODO: Make the args of initProviders generic to reflect multiple providers
-	providers := initProviders(req.SMTPConfig, req.HTMLTemplateName, req.Lo)
+	providers := initProviders(req.SMTPConfig, req.HTMLTemplateName, req.Subject, req.Lo)
 	p, ok := providers[req.Provider]
 	if !ok {
 		req.Lo.Error("Provider not supported. Failed to set OTP", "provider", req.Provider)
