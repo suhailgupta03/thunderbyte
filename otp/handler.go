@@ -245,7 +245,7 @@ func HandleSetOTP(req SetOTPRequest) (*OTPResp, error) {
 
 	// Push the OTP out.
 	if req.To != "" {
-		if err := push(newOTP, p, req.RootURL, req.OtpTTL); err != nil {
+		if err := push(newOTP, p, req.RootURL, ttl); err != nil {
 			req.Lo.Error("error sending OTP", "error", err, "provider", p.provider.ID())
 			return nil, errors.New(fmt.Sprintf("Error sending OTP %v provider %s", err, p.provider.ID()))
 		}
