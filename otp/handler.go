@@ -149,7 +149,9 @@ func verifyOTP(namespace, id, otp string, deleteOnVerify bool, s store.Store, lo
 		errMsg = fmt.Sprintf("Too many attempts. Please retry after %0.f seconds.",
 			out.TTL.Seconds())
 	} else if out.OTP != otp {
-		errMsg = "Incorrect OTP"
+		// TODO: Pickup the noun "Passcode" from the config. It can be called OTP, Passcode, etc.
+		// TODO: Remove the hardcoded "Passcode" from the error message.
+		errMsg = "Incorrect Passcode"
 	}
 
 	// There was an error.
