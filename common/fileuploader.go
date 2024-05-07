@@ -20,6 +20,7 @@ func UploadHandler(context AppContext, s3Config S3Uploader.S3) (*S3Uploader.Uplo
 	context.Logger.Info("Attempting to upload file", "filename", fileName)
 	var fileBytes []byte
 	src.Read(fileBytes)
+	context.Logger.Info("Total file size", "size", len(fileBytes))
 	uploadId, err := s3Config.UploadFile(fileBytes, fileName)
 	if err != nil {
 		return nil, err
