@@ -3,6 +3,7 @@ package core
 import (
 	"github.com/knadh/koanf/v2"
 	"github.com/labstack/echo/v4"
+	"github.com/suhailgupta03/smtppool"
 	"github.com/suhailgupta03/thunderbyte/common"
 	"github.com/suhailgupta03/thunderbyte/database"
 	"github.com/suhailgupta03/thunderbyte/otp/store/redis"
@@ -16,6 +17,7 @@ type TBFactory struct {
 type FactoryCreate struct {
 	DBConfig         *database.DBConfig
 	K                *koanf.Koanf
+	SMTPPool         *smtppool.Pool
 	Redis            *redis.Redis
 	ControllerConfig []*common.ControllerConfig
 	Providers        []interface{}
@@ -61,6 +63,7 @@ func (tbf *TBFactory) Create(fc *FactoryCreate) *TBApp {
 				Srv:      srv,
 				DBConfig: fc.DBConfig,
 				Redis:    fc.Redis,
+				SMTPPool: fc.SMTPPool,
 				K:        fc.K,
 			}, nil)
 		}
@@ -71,6 +74,7 @@ func (tbf *TBFactory) Create(fc *FactoryCreate) *TBApp {
 		Srv:      srv,
 		DBConfig: fc.DBConfig,
 		Redis:    fc.Redis,
+		SMTPPool: fc.SMTPPool,
 		K:        fc.K,
 	}, nil)
 

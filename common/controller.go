@@ -3,6 +3,7 @@ package common
 import (
 	"github.com/knadh/koanf/v2"
 	"github.com/labstack/echo/v4"
+	"github.com/suhailgupta03/smtppool"
 	"github.com/suhailgupta03/thunderbyte/database"
 	"github.com/suhailgupta03/thunderbyte/otp/store/redis"
 	"github.com/zerodha/logf"
@@ -34,6 +35,7 @@ type AppContext struct {
 	HTTPServerContext echo.Context
 	DBConfig          *database.DBConfig
 	Redis             *redis.Redis
+	SMTPPool          *smtppool.Pool
 	Logger            *logf.Logger
 	K                 *koanf.Koanf
 	Q                 interface{}
@@ -62,6 +64,7 @@ type controllerDetails struct {
 	injectedServicesMap *InjectedServicesMap
 	dbConfig            *database.DBConfig
 	redis               *redis.Redis
+	smtpPool            *smtppool.Pool
 	k                   *koanf.Koanf
 }
 
@@ -115,6 +118,7 @@ func (cd *controllerDetails) handleIncomingRequest(c echo.Context, handler HTTPM
 		HTTPServerContext: c,
 		DBConfig:          cd.dbConfig,
 		Redis:             cd.redis,
+		SMTPPool:          cd.smtpPool,
 		K:                 cd.k,
 		Logger:            cd.l,
 	}

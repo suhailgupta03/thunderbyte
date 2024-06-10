@@ -3,6 +3,7 @@ package common
 import (
 	"github.com/knadh/koanf/v2"
 	"github.com/labstack/echo/v4"
+	"github.com/suhailgupta03/smtppool"
 	"github.com/suhailgupta03/thunderbyte/database"
 	"github.com/suhailgupta03/thunderbyte/otp/store/redis"
 	"github.com/zerodha/logf"
@@ -23,6 +24,7 @@ type InitModuleParams struct {
 	DBConfig *database.DBConfig
 	Redis    *redis.Redis
 	K        *koanf.Koanf
+	SMTPPool *smtppool.Pool
 	Logger   *logf.Logger
 }
 
@@ -62,6 +64,7 @@ func InitModule(modules []*Module, moduleParams *InitModuleParams, basePath *str
 				injectedServicesMap: &serviceMap,
 				dbConfig:            moduleParams.DBConfig,
 				redis:               moduleParams.Redis,
+				smtpPool:            moduleParams.SMTPPool,
 				k:                   moduleParams.K,
 			}
 			logger.Info("Initializing module", "path", module.ControllerConfig.ModulePath)
