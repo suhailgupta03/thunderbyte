@@ -4,7 +4,7 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
-	"github.com/knadh/smtppool"
+	"github.com/suhailgupta03/smtppool"
 	"github.com/suhailgupta03/thunderbyte/otp/models"
 	"net/smtp"
 	"regexp"
@@ -25,14 +25,17 @@ var reMail = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?
 
 // Config represents an SMTP server's credentials.
 type Config struct {
-	Host         string        `json:"host"`
-	Port         int           `json:"port"`
-	AuthProtocol string        `json:"auth_protocol"`
-	Username     string        `json:"username"`
-	Password     string        `json:"password"`
-	FromEmail    string        `json:"from_email"`
-	Timeout      time.Duration `json:"timeout"`
-	MaxConns     int           `json:"max_conns"`
+	// SMTPPoolConnection If this is passed, the provider will use this connection
+	// instead of creating a new one.
+	SMTPPoolConnection *smtppool.Pool `json:"smtp_pool"`
+	Host               string         `json:"host"`
+	Port               int            `json:"port"`
+	AuthProtocol       string         `json:"auth_protocol"`
+	Username           string         `json:"username"`
+	Password           string         `json:"password"`
+	FromEmail          string         `json:"from_email"`
+	Timeout            time.Duration  `json:"timeout"`
+	MaxConns           int            `json:"max_conns"`
 
 	// STARTTLS or TLS.
 	TLSType       string `json:"tls_type"`
@@ -47,51 +50,57 @@ type SMTP struct {
 
 // New creates and returns an e-mail Provider backend.
 func New(cfg Config) (*SMTP, error) {
-	if cfg.FromEmail == "" {
-		cfg.FromEmail = "otp@localhost"
-	}
-
-	// Initialize the SMTP mailer.
-	var auth smtp.Auth
-	switch cfg.AuthProtocol {
-	case "login":
-		auth = &smtppool.LoginAuth{Username: cfg.Username, Password: cfg.Password}
-	case "cram":
-		auth = smtp.CRAMMD5Auth(cfg.Username, cfg.Password)
-	case "plain":
-		auth = smtp.PlainAuth("", cfg.Username, cfg.Password, cfg.Host)
-	case "", "none":
-	default:
-		return nil, fmt.Errorf("unknown SMTP auth type '%s'", cfg.AuthProtocol)
-	}
-
-	opt := smtppool.Opt{
-		Host:            cfg.Host,
-		Port:            cfg.Port,
-		MaxConns:        cfg.MaxConns,
-		IdleTimeout:     time.Second * 10,
-		PoolWaitTimeout: cfg.Timeout,
-		Auth:            auth,
-	}
-
-	// TLS config.
-	if cfg.TLSType != "none" {
-		opt.TLSConfig = &tls.Config{}
-		if cfg.TLSSkipVerify {
-			opt.TLSConfig.InsecureSkipVerify = cfg.TLSSkipVerify
-		} else {
-			opt.TLSConfig.ServerName = cfg.Host
+	var pool *smtppool.Pool
+	var err error
+	if cfg.SMTPPoolConnection == nil {
+		if cfg.FromEmail == "" {
+			cfg.FromEmail = "otp@localhost"
 		}
 
-		// SSL/TLS, not cfg.
-		if cfg.TLSType == "TLS" {
-			opt.SSL = true
+		// Initialize the SMTP mailer.
+		var auth smtp.Auth
+		switch cfg.AuthProtocol {
+		case "login":
+			auth = &smtppool.LoginAuth{Username: cfg.Username, Password: cfg.Password}
+		case "cram":
+			auth = smtp.CRAMMD5Auth(cfg.Username, cfg.Password)
+		case "plain":
+			auth = smtp.PlainAuth("", cfg.Username, cfg.Password, cfg.Host)
+		case "", "none":
+		default:
+			return nil, fmt.Errorf("unknown SMTP auth type '%s'", cfg.AuthProtocol)
 		}
-	}
 
-	pool, err := smtppool.New(opt)
-	if err != nil {
-		return nil, err
+		opt := smtppool.Opt{
+			Host:            cfg.Host,
+			Port:            cfg.Port,
+			MaxConns:        cfg.MaxConns,
+			IdleTimeout:     time.Second * 10,
+			PoolWaitTimeout: cfg.Timeout,
+			Auth:            auth,
+		}
+
+		// TLS config.
+		if cfg.TLSType != "none" {
+			opt.TLSConfig = &tls.Config{}
+			if cfg.TLSSkipVerify {
+				opt.TLSConfig.InsecureSkipVerify = cfg.TLSSkipVerify
+			} else {
+				opt.TLSConfig.ServerName = cfg.Host
+			}
+
+			// SSL/TLS, not cfg.
+			if cfg.TLSType == "TLS" {
+				opt.SSL = true
+			}
+		}
+
+		pool, err = smtppool.New(opt)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		pool = cfg.SMTPPoolConnection
 	}
 
 	return &SMTP{
