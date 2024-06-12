@@ -237,3 +237,7 @@ func (r *Redis) get(namespace, id string) (models.OTP, error) {
 	out.TTLSeconds = ttl.Seconds()
 	return out, nil
 }
+
+func (r *Redis) Client() *redis.Client {
+	return r.client
+}

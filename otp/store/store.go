@@ -2,6 +2,7 @@ package store
 
 import (
 	"errors"
+	"github.com/redis/go-redis/v9"
 	"github.com/suhailgupta03/thunderbyte/otp/models"
 )
 
@@ -31,4 +32,6 @@ type Store interface {
 
 	// Ping checks if store is reachable
 	Ping() error
+
+	Client() *redis.Client
 }
