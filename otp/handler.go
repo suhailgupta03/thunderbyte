@@ -38,6 +38,7 @@ type SetOTPRequest struct {
 	Store              store.Store
 	ChannelDescription string
 	AddressDescription string
+	SendEmail          bool
 }
 
 type VerifyOTPRequest struct {
@@ -69,7 +70,9 @@ type pushTpl struct {
 
 type OTPResp struct {
 	models.OTP
-	URL string `json:"url"`
+	URL     string `json:"url"`
+	Subject string `json:"subject"`
+	Body    string `json:"body"`
 }
 
 // generateRandomString generates a cryptographically random,
@@ -100,8 +103,7 @@ func getURL(rootURL string, otp models.OTP, check bool) string {
 	return rootURL + fmt.Sprintf(uriViewOTP, otp.Namespace, otp.ID)
 }
 
-// push compiles a message template and pushes it to the provider.
-func push(otp models.OTP, p *provider, rootURL string, otpTTL time.Duration) error {
+func getSubjectAndBody(otp models.OTP, p *provider, rootURL string, otpTTL time.Duration) (*bytes.Buffer, *bytes.Buffer, error) {
 	var (
 		subj = &bytes.Buffer{}
 		out  = &bytes.Buffer{}
@@ -119,16 +121,28 @@ func push(otp models.OTP, p *provider, rootURL string, otpTTL time.Duration) err
 	if p.tpl != nil {
 		if p.tpl.subject != nil {
 			if err := p.tpl.subject.Execute(subj, data); err != nil {
-				return err
+				return nil, nil, err
 			}
 		}
 
 		if p.tpl.body != nil {
 			if err := p.tpl.body.Execute(out, data); err != nil {
-				return err
+				return nil, nil, err
 			}
 		}
 	}
+
+	return subj, out, nil
+}
+
+// push compiles a message template and pushes it to the provider.
+func push(otp models.OTP, p *provider, rootURL string, otpTTL time.Duration) error {
+	var (
+		subj = &bytes.Buffer{}
+		out  = &bytes.Buffer{}
+	)
+
+	subj, out, _ = getSubjectAndBody(otp, p, rootURL, otpTTL)
 	return p.provider.Push(otp, subj.String(), out.Bytes())
 }
 
@@ -247,15 +261,17 @@ func HandleSetOTP(req SetOTPRequest) (*OTPResp, error) {
 
 	// Push the OTP out.
 	if req.To != "" {
-		if err := push(newOTP, p, req.RootURL, ttl); err != nil {
-			req.Lo.Error("error sending OTP", "error", err, "provider", p.provider.ID())
-			return nil, errors.New(fmt.Sprintf("Error sending OTP %v provider %s", err, p.provider.ID()))
+		if req.SendEmail {
+			if err := push(newOTP, p, req.RootURL, ttl); err != nil {
+				req.Lo.Error("error sending OTP", "error", err, "provider", p.provider.ID())
+				return nil, errors.New(fmt.Sprintf("Error sending OTP %v provider %s", err, p.provider.ID()))
+			}
+			req.Lo.Debug("sending otp", "to", newOTP.To, "provider", p.provider.ID(), "namespace", otp.Namespace)
 		}
-		req.Lo.Debug("sending otp", "to", newOTP.To, "provider", p.provider.ID(), "namespace", otp.Namespace)
-
 	}
 
-	out := OTPResp{newOTP, getURL(req.RootURL, newOTP, false)}
+	subject, body, _ := getSubjectAndBody(newOTP, p, req.RootURL, ttl)
+	out := OTPResp{newOTP, getURL(req.RootURL, newOTP, false), subject.String(), body.String()}
 	return &out, nil
 }
 
