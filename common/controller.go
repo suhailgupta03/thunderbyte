@@ -2,6 +2,7 @@ package common
 
 import (
 	"github.com/knadh/koanf/v2"
+	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/suhailgupta03/smtppool"
 	"github.com/suhailgupta03/thunderbyte/database"
@@ -46,15 +47,20 @@ type RequestContext struct {
 	Path        string
 	Headers     Headers
 }
+
 type ServiceName string
 type InjectedServicesMap map[ServiceName]interface{}
 type HTTPMethodHandler func(context AppContext, injectedServicesMap *InjectedServicesMap) (interface{}, *HTTPError)
-type HTTPMethods map[HTTPMethod]HTTPMethodHandler
+type HTTPMethodHandlerConfig struct {
+	Handler   HTTPMethodHandler
+	JWTSecret string // If present then JWT middleware will be added on the handler
+}
+type HTTPMethods map[HTTPMethod]HTTPMethodHandlerConfig
 type Controller map[RoutePath]HTTPMethods
-
-type ControllerConfig struct {
+type ControllerConfig struct { // TODO: Rename this to moduleConfig
 	ModulePath  RoutePath
 	Controllers Controller
+	JWTSecret   string // If present then JWT middleware will be added on the module
 }
 
 type controllerDetails struct {
@@ -110,6 +116,16 @@ func extractRequestContext(c echo.Context) RequestContext {
 	}
 }
 
+// conditionalMiddleware wraps another middleware and decides at runtime whether to apply it
+func conditionalMiddleware(conditional bool, nextMiddleware echo.MiddlewareFunc) echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		if conditional {
+			return nextMiddleware(next)
+		}
+		return next
+	}
+}
+
 func (cd *controllerDetails) handleIncomingRequest(c echo.Context, handler HTTPMethodHandler) error {
 	requestStart := time.Now().UnixNano()
 	fn := reflect.ValueOf(handler)
@@ -153,6 +169,26 @@ func (cd *controllerDetails) initIncomingRequestHandler(handler HTTPMethodHandle
 }
 
 func (cd *controllerDetails) registerRoutes() {
+	moduleGroupRoute := cd.e.Group(string(cd.c.ModulePath))
+	methodFuncs := map[HTTPMethod]func(string, echo.HandlerFunc, ...echo.MiddlewareFunc) *echo.Route{
+		GET:     moduleGroupRoute.GET,
+		POST:    moduleGroupRoute.POST,
+		PUT:     moduleGroupRoute.PUT,
+		DELETE:  moduleGroupRoute.DELETE,
+		PATCH:   moduleGroupRoute.PATCH,
+		OPTIONS: moduleGroupRoute.OPTIONS,
+		HEAD:    moduleGroupRoute.HEAD,
+		TRACE:   moduleGroupRoute.TRACE,
+		CONNECT: moduleGroupRoute.CONNECT,
+	}
+	if cd.c.JWTSecret != "" {
+		// Add JWT middleware to the complete module
+		moduleGroupRoute.Use(echojwt.WithConfig(echojwt.Config{
+			SigningKey:    []byte(cd.c.JWTSecret),
+			SigningMethod: "HS256", // TODO: Make this configurable
+		}))
+	}
+
 	for path, methods := range cd.c.Controllers {
 		modulePath := string(cd.c.ModulePath)
 		pathToRegister := string(path)
@@ -167,43 +203,22 @@ func (cd *controllerDetails) registerRoutes() {
 			cd.l.Warn("A controller has no module path. It is recommended to always have a module path", "path", pathToRegister)
 		}
 		for method, handler := range methods {
-			switch method {
-			case GET:
-				cd.e.GET(pathToRegister, cd.initIncomingRequestHandler(handler))
-				cd.l.Info("Registered", "GET", pathToRegister)
-				break
-			case POST:
-				cd.e.POST(pathToRegister, cd.initIncomingRequestHandler(handler))
-				cd.l.Info("Registered", "POST", pathToRegister)
-				break
-			case PUT:
-				cd.e.PUT(pathToRegister, cd.initIncomingRequestHandler(handler))
-				cd.l.Info("Registered", "PUT", pathToRegister)
-				break
-			case DELETE:
-				cd.e.DELETE(pathToRegister, cd.initIncomingRequestHandler(handler))
-				cd.l.Info("Registered", "DELETE", pathToRegister)
-				break
-			case PATCH:
-				cd.e.PATCH(pathToRegister, cd.initIncomingRequestHandler(handler))
-				cd.l.Info("Registered", "PATCH", pathToRegister)
-				break
-			case OPTIONS:
-				cd.e.OPTIONS(pathToRegister, cd.initIncomingRequestHandler(handler))
-				cd.l.Info("Registered", "OPTIONS", pathToRegister)
-				break
-			case HEAD:
-				cd.e.HEAD(pathToRegister, cd.initIncomingRequestHandler(handler))
-				cd.l.Info("Registered", "HEAD", pathToRegister)
-				break
-			case TRACE:
-				cd.e.TRACE(pathToRegister, cd.initIncomingRequestHandler(handler))
-				cd.l.Info("Registered", "TRACE", pathToRegister)
-				break
-			case CONNECT:
-				cd.e.CONNECT(pathToRegister, cd.initIncomingRequestHandler(handler))
-				cd.l.Info("Registered", "CONNECT", pathToRegister)
-				break
+			applyJWTMiddleware := handler.JWTSecret != ""
+			var middlewareFuncs []echo.MiddlewareFunc
+			if applyJWTMiddleware {
+				jwtMiddleware := echojwt.WithConfig(echojwt.Config{
+					SigningKey:    []byte(handler.JWTSecret),
+					SigningMethod: "HS256", // TODO: Make this configurable
+				})
+				middlewareFuncs = append(middlewareFuncs, conditionalMiddleware(applyJWTMiddleware, jwtMiddleware))
+			}
+			initializedHandler := cd.initIncomingRequestHandler(handler.Handler)
+			if methodFunc, ok := methodFuncs[method]; ok {
+				// Dynamically call the method function (e.g., GET, POST) with path, handler, and middleware
+				methodFunc(pathToRegister, initializedHandler, middlewareFuncs...)
+				cd.l.Info("Registered", method, pathToRegister)
+			} else {
+				cd.l.Error("Unsupported method", method)
 			}
 		}
 	}
