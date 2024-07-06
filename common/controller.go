@@ -216,9 +216,9 @@ func (cd *controllerDetails) registerRoutes() {
 			if methodFunc, ok := methodFuncs[method]; ok {
 				// Dynamically call the method function (e.g., GET, POST) with path, handler, and middleware
 				methodFunc(pathToRegister, initializedHandler, middlewareFuncs...)
-				cd.l.Info("Registered", method, pathToRegister)
+				cd.l.Info("Registered", string(method), pathToRegister)
 			} else {
-				cd.l.Error("Unsupported method", method)
+				cd.l.Error("Unsupported method", string(method))
 			}
 		}
 	}
