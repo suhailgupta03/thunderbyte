@@ -1,6 +1,7 @@
 package common
 
 import (
+	"fmt"
 	"github.com/knadh/koanf/v2"
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
@@ -55,11 +56,11 @@ type HTTPMethodHandlerConfig struct {
 	Handler   HTTPMethodHandler
 	JWTSecret string // If present then JWT middleware will be added on the handler
 }
-type HTTPMethods map[HTTPMethod]HTTPMethodHandlerConfig
-type Controller map[RoutePath]HTTPMethods
+type HTTPMethodConfig map[HTTPMethod]HTTPMethodHandlerConfig
+type Controllers map[RoutePath]HTTPMethodConfig
 type ControllerConfig struct { // TODO: Rename this to moduleConfig
 	ModulePath  RoutePath
-	Controllers Controller
+	Controllers Controllers
 	JWTSecret   string // If present then JWT middleware will be added on the module
 }
 
@@ -189,7 +190,7 @@ func (cd *controllerDetails) registerRoutes() {
 		}))
 	}
 
-	for path, methods := range cd.c.Controllers {
+	for path, methodConfig := range cd.c.Controllers {
 		modulePath := string(cd.c.ModulePath)
 		pathToRegister := string(path)
 		if !strings.HasPrefix(pathToRegister, "/") {
@@ -202,7 +203,7 @@ func (cd *controllerDetails) registerRoutes() {
 		} else {
 			cd.l.Warn("A controller has no module path. It is recommended to always have a module path", "path", pathToRegister)
 		}
-		for method, handler := range methods {
+		for method, handler := range methodConfig {
 			applyJWTMiddleware := handler.JWTSecret != ""
 			var middlewareFuncs []echo.MiddlewareFunc
 			if applyJWTMiddleware {
@@ -214,6 +215,7 @@ func (cd *controllerDetails) registerRoutes() {
 			}
 			initializedHandler := cd.initIncomingRequestHandler(handler.Handler)
 			if methodFunc, ok := methodFuncs[method]; ok {
+				fmt.Println(method, "@@")
 				// Dynamically call the method function (e.g., GET, POST) with path, handler, and middleware
 				methodFunc(pathToRegister, initializedHandler, middlewareFuncs...)
 				cd.l.Info("Registered", "Method", string(method), "Path", pathToRegister)
