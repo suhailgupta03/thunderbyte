@@ -1,7 +1,6 @@
 package common
 
 import (
-	"fmt"
 	"github.com/knadh/koanf/v2"
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
@@ -171,56 +170,80 @@ func (cd *controllerDetails) initIncomingRequestHandler(handler HTTPMethodHandle
 
 func (cd *controllerDetails) registerRoutes() {
 	moduleGroupRoute := cd.e.Group(string(cd.c.ModulePath))
-	methodFuncs := map[HTTPMethod]func(string, echo.HandlerFunc, ...echo.MiddlewareFunc) *echo.Route{
-		GET:     moduleGroupRoute.GET,
-		POST:    moduleGroupRoute.POST,
-		PUT:     moduleGroupRoute.PUT,
-		DELETE:  moduleGroupRoute.DELETE,
-		PATCH:   moduleGroupRoute.PATCH,
-		OPTIONS: moduleGroupRoute.OPTIONS,
-		HEAD:    moduleGroupRoute.HEAD,
-		TRACE:   moduleGroupRoute.TRACE,
-		CONNECT: moduleGroupRoute.CONNECT,
-	}
 	if cd.c.JWTSecret != "" {
 		// Add JWT middleware to the complete module
 		moduleGroupRoute.Use(echojwt.WithConfig(echojwt.Config{
 			SigningKey:    []byte(cd.c.JWTSecret),
 			SigningMethod: "HS256", // TODO: Make this configurable
 		}))
-	}
-
-	for path, methodConfig := range cd.c.Controllers {
-		modulePath := string(cd.c.ModulePath)
-		pathToRegister := string(path)
-		if !strings.HasPrefix(pathToRegister, "/") {
-			pathToRegister = "/" + pathToRegister
+		methodFuncs := map[HTTPMethod]func(string, echo.HandlerFunc, ...echo.MiddlewareFunc) *echo.Route{
+			GET:     moduleGroupRoute.GET,
+			POST:    moduleGroupRoute.POST,
+			PUT:     moduleGroupRoute.PUT,
+			DELETE:  moduleGroupRoute.DELETE,
+			PATCH:   moduleGroupRoute.PATCH,
+			OPTIONS: moduleGroupRoute.OPTIONS,
+			HEAD:    moduleGroupRoute.HEAD,
+			TRACE:   moduleGroupRoute.TRACE,
+			CONNECT: moduleGroupRoute.CONNECT,
 		}
-		if strings.TrimSpace(modulePath) != "" {
-			modulePath = strings.TrimSuffix(modulePath, "/")
-			pathToRegister = strings.TrimPrefix(pathToRegister, "/")
-			pathToRegister = modulePath + "/" + pathToRegister
-		} else {
-			cd.l.Warn("A controller has no module path. It is recommended to always have a module path", "path", pathToRegister)
-		}
-		for method, handler := range methodConfig {
-			applyJWTMiddleware := handler.JWTSecret != ""
-			var middlewareFuncs []echo.MiddlewareFunc
-			if applyJWTMiddleware {
-				jwtMiddleware := echojwt.WithConfig(echojwt.Config{
-					SigningKey:    []byte(handler.JWTSecret),
-					SigningMethod: "HS256", // TODO: Make this configurable
-				})
-				middlewareFuncs = append(middlewareFuncs, conditionalMiddleware(applyJWTMiddleware, jwtMiddleware))
+		for path, methodConfig := range cd.c.Controllers {
+			pathToRegister := string(path)
+			if !strings.HasPrefix(pathToRegister, "/") {
+				pathToRegister = "/" + pathToRegister
 			}
-			initializedHandler := cd.initIncomingRequestHandler(handler.Handler)
-			if methodFunc, ok := methodFuncs[method]; ok {
-				fmt.Println(method, "@@")
-				// Dynamically call the method function (e.g., GET, POST) with path, handler, and middleware
-				methodFunc(pathToRegister, initializedHandler, middlewareFuncs...)
-				cd.l.Info("Registered", "Method", string(method), "Path", pathToRegister)
+			for method, handlerConfig := range methodConfig {
+				initializedHandler := cd.initIncomingRequestHandler(handlerConfig.Handler)
+				if methodFunc, ok := methodFuncs[method]; ok {
+					methodFunc(pathToRegister, initializedHandler)
+					cd.l.Info("Registered restricted path", "Method", int(method), "Module", string(cd.c.ModulePath), "Path", pathToRegister)
+				}
+			}
+		}
+	} else {
+		methodFuncs := map[HTTPMethod]func(string, echo.HandlerFunc, ...echo.MiddlewareFunc) *echo.Route{
+			GET:     cd.e.GET,
+			POST:    cd.e.POST,
+			PUT:     cd.e.PUT,
+			DELETE:  cd.e.DELETE,
+			PATCH:   cd.e.PATCH,
+			OPTIONS: cd.e.OPTIONS,
+			HEAD:    cd.e.HEAD,
+			TRACE:   cd.e.TRACE,
+			CONNECT: cd.e.CONNECT,
+		}
+
+		for path, methodConfig := range cd.c.Controllers {
+			modulePath := string(cd.c.ModulePath)
+			pathToRegister := string(path)
+			if !strings.HasPrefix(pathToRegister, "/") {
+				pathToRegister = "/" + pathToRegister
+			}
+			if strings.TrimSpace(modulePath) != "" {
+				modulePath = strings.TrimSuffix(modulePath, "/")
+				pathToRegister = strings.TrimPrefix(pathToRegister, "/")
+				pathToRegister = modulePath + "/" + pathToRegister
 			} else {
-				cd.l.Error("Unsupported method", string(method))
+				cd.l.Warn("A controller has no module path. It is recommended to always have a module path", "path", pathToRegister)
+			}
+			for method, handlerConfig := range methodConfig {
+				applyJWTMiddleware := handlerConfig.JWTSecret != ""
+				var middlewareFuncs []echo.MiddlewareFunc
+				if applyJWTMiddleware {
+					jwtMiddleware := echojwt.WithConfig(echojwt.Config{
+						SigningKey:    []byte(handlerConfig.JWTSecret),
+						SigningMethod: "HS256", // TODO: Make this configurable
+					})
+					middlewareFuncs = append(middlewareFuncs, conditionalMiddleware(applyJWTMiddleware, jwtMiddleware))
+				}
+				initializedHandler := cd.initIncomingRequestHandler(handlerConfig.Handler)
+				if methodFunc, ok := methodFuncs[method]; ok {
+					// Dynamically call the method function (e.g., GET, POST) with path, handler, and middleware
+					methodFunc(pathToRegister, initializedHandler, middlewareFuncs...)
+					cd.l.Info("Registered", "Method", int(method), "Path", pathToRegister)
+				} else {
+					cd.l.Error("Unsupported method", int(method))
+				}
 			}
 		}
 	}
