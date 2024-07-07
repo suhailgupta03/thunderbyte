@@ -171,6 +171,7 @@ func (cd *controllerDetails) initIncomingRequestHandler(handler HTTPMethodHandle
 
 func (cd *controllerDetails) registerRoutes() {
 	moduleGroupRoute := cd.e.Group(string(cd.c.ModulePath))
+	fmt.Println(moduleGroupRoute, "%%%%%%")
 	if cd.c.JWTSecret != "" {
 		fmt.Println("Inside JWT ^^^")
 		// Add JWT middleware to the complete module
