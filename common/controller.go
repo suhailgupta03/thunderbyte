@@ -1,7 +1,6 @@
 package common
 
 import (
-	"fmt"
 	"github.com/knadh/koanf/v2"
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
@@ -171,9 +170,7 @@ func (cd *controllerDetails) initIncomingRequestHandler(handler HTTPMethodHandle
 
 func (cd *controllerDetails) registerRoutes() {
 	moduleGroupRoute := cd.e.Group(string(cd.c.ModulePath))
-	fmt.Println(moduleGroupRoute, "%%%%%%")
 	if cd.c.JWTSecret != "" {
-		fmt.Println("Inside JWT ^^^")
 		// Add JWT middleware to the complete module
 		moduleGroupRoute.Use(echojwt.WithConfig(echojwt.Config{
 			SigningKey:    []byte(cd.c.JWTSecret),
@@ -195,7 +192,6 @@ func (cd *controllerDetails) registerRoutes() {
 			if !strings.HasPrefix(pathToRegister, "/") {
 				pathToRegister = "/" + pathToRegister
 			}
-			fmt.Println(">>>>", pathToRegister)
 			for method, handlerConfig := range methodConfig {
 				initializedHandler := cd.initIncomingRequestHandler(handlerConfig.Handler)
 				if methodFunc, ok := methodFuncs[method]; ok {
