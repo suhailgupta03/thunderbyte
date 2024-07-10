@@ -180,6 +180,7 @@ func (cd *controllerDetails) registerRoutes() {
 		moduleGroupRoute.Use(echojwt.WithConfig(echojwt.Config{
 			SigningKey:    []byte(cd.c.JWTSecret),
 			SigningMethod: "HS256", // TODO: Make this configurable
+			TokenLookup:   "cookie:token",
 		}))
 		methodFuncs := map[HTTPMethod]func(string, echo.HandlerFunc, ...echo.MiddlewareFunc) *echo.Route{
 			GET:     moduleGroupRoute.GET,
@@ -240,6 +241,7 @@ func (cd *controllerDetails) registerRoutes() {
 					jwtMiddleware := echojwt.WithConfig(echojwt.Config{
 						SigningKey:    []byte(handlerConfig.JWTSecret),
 						SigningMethod: "HS256", // TODO: Make this configurable
+						TokenLookup:   "cookie:token",
 					})
 					middlewareFuncs = append(middlewareFuncs, conditionalMiddleware(applyJWTMiddleware, jwtMiddleware))
 				}
