@@ -41,6 +41,11 @@ type AppContext struct {
 	K                 *koanf.Koanf
 	Q                 interface{}
 }
+
+func (ctx *AppContext) SetCookie(cookie *http.Cookie) {
+	ctx.HTTPServerContext.SetCookie(cookie)
+}
+
 type RequestContext struct {
 	Body        interface{}
 	QueryParams QueryParams
