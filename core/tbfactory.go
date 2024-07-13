@@ -78,6 +78,8 @@ func (tbf *TBFactory) Create(fc *FactoryCreate) *TBApp {
 		K:        fc.K,
 	}, nil)
 
+	srv.Validator = common.NewRequestValidator()
+
 	return &TBApp{
 		Logger:         &logger,
 		DB:             fc.DBConfig.GetDB(),
