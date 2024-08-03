@@ -1,6 +1,7 @@
 package common
 
 import (
+	"fmt"
 	"github.com/knadh/koanf/v2"
 	"github.com/labstack/echo/v4"
 	"github.com/suhailgupta03/smtppool"
@@ -34,6 +35,7 @@ func InitModule(modules []*Module, moduleParams *InitModuleParams, basePath *str
 	srv := moduleParams.Srv
 
 	for _, module := range modules {
+		fmt.Println(module.ControllerConfig.ModulePath, " @@@@@@@@")
 		if module != nil {
 			if module.ControllerConfig.ModulePath == "" {
 				logger.Fatal("ModulePath is missing for one of the controller configs in imports")
