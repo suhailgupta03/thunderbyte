@@ -35,8 +35,9 @@ func InitModule(modules []*Module, moduleParams *InitModuleParams, basePath *str
 	srv := moduleParams.Srv
 
 	for _, module := range modules {
+		fmt.Println("Length: ", len(modules))
 		if module != nil {
-			fmt.Println(module.ControllerConfig.ModulePath, " @@@@@@@@", len(modules))
+			fmt.Println(module.ControllerConfig.ModulePath)
 			if module.ControllerConfig.ModulePath == "" {
 				logger.Fatal("ModulePath is missing for one of the controller configs in imports")
 			}
