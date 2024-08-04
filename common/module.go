@@ -34,8 +34,12 @@ func InitModule(modules []*Module, moduleParams *InitModuleParams, basePath *str
 	logger := moduleParams.Logger
 	srv := moduleParams.Srv
 
-	for _, module := range modules {
+	if len(modules) >= 2 {
 		fmt.Println("Length: ", len(modules))
+		fmt.Println("Module1: ", modules[0].ControllerConfig.ModulePath)
+		fmt.Println("Module2: ", modules[1].ControllerConfig.ModulePath)
+	}
+	for _, module := range modules {
 		if module != nil {
 			fmt.Println(module.ControllerConfig.ModulePath)
 			if module.ControllerConfig.ModulePath == "" {
