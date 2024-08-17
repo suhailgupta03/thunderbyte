@@ -25,6 +25,7 @@ type SetOTPRequest struct {
 	// The URL where the server is running
 	RootURL            string
 	Namespace          string
+	CodeType           string
 	Provider           string
 	ID                 string
 	To                 string
@@ -62,6 +63,7 @@ type CheckOTPStatus struct {
 type pushTpl struct {
 	To        string
 	Namespace string
+	CodeType  string
 	Channel   string
 	OTP       string
 	OTPURL    string
@@ -103,7 +105,7 @@ func getURL(rootURL string, otp models.OTP, check bool) string {
 	return rootURL + fmt.Sprintf(uriViewOTP, otp.Namespace, otp.ID)
 }
 
-func getSubjectAndBody(otp models.OTP, p *provider, rootURL string, otpTTL time.Duration) (*bytes.Buffer, *bytes.Buffer, error) {
+func getSubjectAndBody(otp models.OTP, codeType string, p *provider, rootURL string, otpTTL time.Duration) (*bytes.Buffer, *bytes.Buffer, error) {
 	var (
 		subj = &bytes.Buffer{}
 		out  = &bytes.Buffer{}
@@ -111,6 +113,7 @@ func getSubjectAndBody(otp models.OTP, p *provider, rootURL string, otpTTL time.
 		data = pushTpl{
 			Channel:   p.provider.ChannelName(),
 			Namespace: otp.Namespace,
+			CodeType:  codeType,
 			To:        otp.To,
 			OTP:       otp.OTP,
 			OTPURL:    getURL(rootURL, otp, true),
@@ -136,13 +139,13 @@ func getSubjectAndBody(otp models.OTP, p *provider, rootURL string, otpTTL time.
 }
 
 // push compiles a message template and pushes it to the provider.
-func push(otp models.OTP, p *provider, rootURL string, otpTTL time.Duration) error {
+func push(otp models.OTP, codeType string, p *provider, rootURL string, otpTTL time.Duration) error {
 	var (
 		subj = &bytes.Buffer{}
 		out  = &bytes.Buffer{}
 	)
 
-	subj, out, _ = getSubjectAndBody(otp, p, rootURL, otpTTL)
+	subj, out, _ = getSubjectAndBody(otp, codeType, p, rootURL, otpTTL)
 	return p.provider.Push(otp, subj.String(), out.Bytes())
 }
 
@@ -262,7 +265,7 @@ func HandleSetOTP(req SetOTPRequest) (*OTPResp, error) {
 	// Push the OTP out.
 	if req.To != "" {
 		if req.SendEmail {
-			if err := push(newOTP, p, req.RootURL, ttl); err != nil {
+			if err := push(newOTP, req.CodeType, p, req.RootURL, ttl); err != nil {
 				req.Lo.Error("error sending OTP", "error", err, "provider", p.provider.ID())
 				return nil, errors.New(fmt.Sprintf("Error sending OTP %v provider %s", err, p.provider.ID()))
 			}
@@ -270,7 +273,7 @@ func HandleSetOTP(req SetOTPRequest) (*OTPResp, error) {
 		}
 	}
 
-	subject, body, _ := getSubjectAndBody(newOTP, p, req.RootURL, ttl)
+	subject, body, _ := getSubjectAndBody(newOTP, req.CodeType, p, req.RootURL, ttl)
 	out := OTPResp{newOTP, getURL(req.RootURL, newOTP, false), subject.String(), body.String()}
 	return &out, nil
 }
