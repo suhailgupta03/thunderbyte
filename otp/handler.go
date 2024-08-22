@@ -158,22 +158,27 @@ func verifyOTP(namespace, id, otp string, deleteOnVerify bool, s store.Store, lo
 			lo.Error("error checking OTP", "error", err)
 			return out, err
 		}
-		return out, errors.New("error checking OTP.")
+		return out, NewOTPError(OTPErrorUnknown, "Error checking OTP.")
 	}
 
 	errMsg := ""
+	otpError := OTPError{}
 	if isLocked(out) {
 		errMsg = fmt.Sprintf("Too many attempts. Please retry after %0.f seconds.",
 			out.TTL.Seconds())
+		otpError.ErrorCode = MaxAttemptsExceeded
+		otpError.RetryAfter = out.TTL.Seconds()
 	} else if out.OTP != otp {
 		// TODO: Pickup the noun "Passcode" from the config. It can be called OTP, Passcode, etc.
 		// TODO: Remove the hardcoded "Passcode" from the error message.
 		errMsg = "Incorrect Passcode"
+		otpError.ErrorCode = InvalidOTP
 	}
+	otpError.Message = errMsg
 
 	// There was an error.
 	if errMsg != "" {
-		return out, errors.New(errMsg)
+		return out, &otpError
 	}
 
 	// Delete the OTP?
@@ -194,26 +199,26 @@ func HandleSetOTP(req SetOTPRequest) (*OTPResp, error) {
 	p, ok := providers[req.Provider]
 	if !ok {
 		req.Lo.Error("Provider not supported. Failed to set OTP", "provider", req.Provider)
-		return nil, errors.New(fmt.Sprintf("%s provider not supported. Failed to set OTP", req.Provider))
+		return nil, NewOTPError(ProviderNotSupported, fmt.Sprintf("%s provider not supported. Failed to set OTP", req.Provider))
 	}
 
 	// Validate the 'to' address with the provider if one is given.
 	if req.To != "" {
 		if err := p.provider.ValidateAddress(req.To); err != nil {
 			req.Lo.Error("Invalid `to` address", "error", err)
-			return nil, errors.New(fmt.Sprintf("Invalid `to` address: %v", err))
+			return nil, NewOTPError(OTPErrorUnknown, fmt.Sprintf("Invalid `to` address: %v", err))
 		}
 	}
 
 	if req.OtpTTL == time.Duration(0) {
 		req.Lo.Error("TTL value cannot be empty")
-		return nil, errors.New(fmt.Sprintf("TTL value cannot be empty"))
+		return nil, NewOTPError(OTPErrorUnknown, fmt.Sprintf("TTL value cannot be empty"))
 	}
 	ttl := time.Second * req.OtpTTL
 
 	if req.RawMaxAttempts == 0 || req.RawMaxAttempts < 1 {
 		req.Lo.Error("Max attempts for OTP cannot be empty")
-		return nil, errors.New("Max attempts for OTP cannot be empty")
+		return nil, NewOTPError(OTPErrorUnknown, fmt.Sprintf("Max attempts for OTP cannot be empty"))
 	}
 
 	maxAttempts := req.RawMaxAttempts
@@ -221,7 +226,7 @@ func HandleSetOTP(req SetOTPRequest) (*OTPResp, error) {
 	if id == "" {
 		if oid, err := generateRandomString(32, alphaNumChars); err != nil {
 			req.Lo.Error("error generating ID", "error", err)
-			return nil, errors.New(fmt.Sprintf("error generating ID %v", err))
+			return nil, NewOTPError(OTPErrorUnknown, fmt.Sprintf("error generating ID %v", err))
 		} else {
 			id = oid
 		}
@@ -229,20 +234,25 @@ func HandleSetOTP(req SetOTPRequest) (*OTPResp, error) {
 
 	otpVal, err := generateRandomString(p.provider.MaxOTPLen(), numChars)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("error generating OTP %v", err))
+		return nil, NewOTPError(OTPErrorUnknown, fmt.Sprintf("error generating OTP %v", err))
 	}
 
 	// Check if the OTP attempts have exceeded the quota.
 	otp, err := req.Store.Check(req.Namespace, id, false)
 	if err != nil && err != store.ErrNotExist {
 		req.Lo.Error("error checking OTP status", "error", err)
-		return nil, errors.New(fmt.Sprintf("error checking OTP status %v", err))
+		return nil, NewOTPError(ConnectionToStoreFailed, fmt.Sprintf("error checking OTP status %v", err))
 	}
 
 	// There's an existing OTP that's locked.
 	if err != store.ErrNotExist && isLocked(otp) {
 		req.Lo.Error(fmt.Sprintf("OTP attempts exceeded. Retry after %0.f seconds.", otp.TTL.Seconds()))
-		return nil, errors.New(fmt.Sprintf("OTP attempts exceeded. Retry after %0.f seconds.", otp.TTL.Seconds()))
+		otpError := OTPError{
+			Message:    fmt.Sprintf("OTP attempts exceeded. Retry after %0.f seconds.", otp.TTL.Seconds()),
+			ErrorCode:  MaxAttemptsExceeded,
+			RetryAfter: otp.TTL.Seconds(),
+		}
+		return nil, &otpError
 	}
 
 	// Create the OTP.
@@ -259,7 +269,7 @@ func HandleSetOTP(req SetOTPRequest) (*OTPResp, error) {
 
 	if err != nil {
 		req.Lo.Error("Error setting OTP", "error", err)
-		return nil, errors.New(fmt.Sprintf("Error setting OTP %v", err))
+		return nil, NewOTPError(SettingOTPFailed, fmt.Sprintf("Error setting OTP %v", err))
 	}
 
 	// Push the OTP out.
@@ -267,7 +277,7 @@ func HandleSetOTP(req SetOTPRequest) (*OTPResp, error) {
 		if req.SendEmail {
 			if err := push(newOTP, req.CodeType, p, req.RootURL, ttl); err != nil {
 				req.Lo.Error("error sending OTP", "error", err, "provider", p.provider.ID())
-				return nil, errors.New(fmt.Sprintf("Error sending OTP %v provider %s", err, p.provider.ID()))
+				return nil, NewOTPError(SendingOTPFailed, fmt.Sprintf("Error sending OTP %v provider %s", err, p.provider.ID()))
 			}
 			req.Lo.Debug("sending otp", "to", newOTP.To, "provider", p.provider.ID(), "namespace", otp.Namespace)
 		}
@@ -282,11 +292,11 @@ func HandleSetOTP(req SetOTPRequest) (*OTPResp, error) {
 func HandleVerifyOTP(req *VerifyOTPRequest) (*models.OTP, error) {
 	if len(req.ID) < 6 {
 		req.Lo.Error("ID should be min 6 chars")
-		return nil, errors.New("ID should be min 6 chars")
+		return nil, NewOTPError(OTPErrorUnknown, "ID should be min 6 chars")
 	}
 	if req.OTPVal == "" {
 		req.Lo.Error("`otp` is empty.")
-		return nil, errors.New("`otp` is empty.")
+		return nil, NewOTPError(OTPErrorUnknown, "`otp` is empty.")
 	}
 
 	out, err := verifyOTP(req.Namespace, req.ID, req.OTPVal, true, req.Store, req.Lo)
