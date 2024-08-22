@@ -1,5 +1,7 @@
 package otp
 
+import "time"
+
 type OTPErrorCode int
 
 const (
@@ -16,7 +18,7 @@ const (
 type OTPError struct {
 	Message    string
 	ErrorCode  OTPErrorCode
-	RetryAfter float64
+	RetryAfter time.Duration
 }
 
 func (e *OTPError) Error() string {

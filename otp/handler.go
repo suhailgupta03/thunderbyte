@@ -167,7 +167,7 @@ func verifyOTP(namespace, id, otp string, deleteOnVerify bool, s store.Store, lo
 		errMsg = fmt.Sprintf("Too many attempts. Please retry after %0.f seconds.",
 			out.TTL.Seconds())
 		otpError.ErrorCode = MaxAttemptsExceeded
-		otpError.RetryAfter = out.TTL.Seconds()
+		otpError.RetryAfter = out.TTL
 	} else if out.OTP != otp {
 		// TODO: Pickup the noun "Passcode" from the config. It can be called OTP, Passcode, etc.
 		// TODO: Remove the hardcoded "Passcode" from the error message.
@@ -250,7 +250,7 @@ func HandleSetOTP(req SetOTPRequest) (*OTPResp, error) {
 		otpError := OTPError{
 			Message:    fmt.Sprintf("OTP attempts exceeded. Retry after %0.f seconds.", otp.TTL.Seconds()),
 			ErrorCode:  MaxAttemptsExceeded,
-			RetryAfter: otp.TTL.Seconds(),
+			RetryAfter: otp.TTL,
 		}
 		return nil, &otpError
 	}
