@@ -158,7 +158,7 @@ func verifyOTP(namespace, id, otp string, deleteOnVerify bool, s store.Store, lo
 			lo.Error("error checking OTP", "error", err)
 			return out, err
 		}
-		return out, NewOTPError(OTPErrorUnknown, "Error checking OTP.")
+		return out, NewOTPError(OTPExpired, "OTP Expired. Please regenerate OTP")
 	}
 
 	errMsg := ""
