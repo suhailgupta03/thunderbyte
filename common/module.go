@@ -33,7 +33,7 @@ type InitModuleParams struct {
 func InitModule(modules []*Module, moduleParams *InitModuleParams, basePath *string) {
 	logger := moduleParams.Logger
 	srv := moduleParams.Srv
-	
+
 	for _, module := range modules {
 		if module != nil {
 			fmt.Println(module.ControllerConfig.ModulePath)

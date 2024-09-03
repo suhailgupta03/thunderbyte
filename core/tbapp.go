@@ -26,6 +26,7 @@ func (tba *TBApp) Listen(port int) *echo.Echo {
 	srv.HideBanner = true
 	// Initialize the request validator
 	srv.Validator = &RequestValidator{validator: validator.New()}
+
 	// Start the server.
 	go func() {
 		address := ":" + strconv.Itoa(port)
